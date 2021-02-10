@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+    <appender name="file" factory="com.epam.deltix.gflog.core.appender.DailyRollingFileAppenderFactory"
+              file="gflog-sample/build/tmp/file.log" fileSuffixTemplate="_yyyy-MM-dd-HH-mm-ss"
+              maxFiles="2" maxFileSize="1KB"/>
+
+    <logger>
+        <appender-ref ref="file"/>
+    </logger>
+
+</config>

@@ -1,0 +1,15 @@
+<config>
+
+    <appender name="file" factory="com.epam.deltix.gflog.core.appender.DailyRollingFileAppenderFactory"
+              file="${temp-file}"
+              maxFileSize="1G" maxFiles="10">
+        <layout template="%d %p '%c' [%t] %m%n"/>
+    </appender>
+
+    <logger>
+        <appender-ref ref="file"/>
+    </logger>
+
+    <service entryEncoding="${encoding}"/>
+
+</config>

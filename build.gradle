@@ -1,0 +1,166 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "6.0.0" apply false
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation 'junit:junit:4.12'
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        archiveClassifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+
+    compileTestJava.options.encoding = 'UTF-8'
+
+    test {
+        testLogging {
+            events "passed", "skipped", "failed", "standardOut", "standardError"
+            exceptionFormat = "full"
+        }
+
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(4) ?: 1
+    }
+
+    publishing {
+        repositories {
+            maven {
+                url System.getenv('MAVEN_REPOSITORY')
+                credentials {
+                    username System.getenv('MAVEN_USERNAME')
+                    password System.getenv('MAVEN_PASSWORD')
+                }
+            }
+        }
+
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = archivesBaseName
+
+                from components.java
+                artifact sourcesJar
+
+                pom {
+                    description = 'High efficient garbage free logging framework for Java 8+'
+                    url = 'https://github.com/artsiomkorzun/gflog'
+
+                    scm {
+                        connection = 'scm:git:https://github.com/artsiomkorzun/gflog.git'
+                        developerConnection = 'scm:git:https://github.com/artsiomkorzun/gflog.git'
+                        url = 'https://github.com/artsiomkorzun/gflog.git'
+                    }
+
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'artsiomkorzun'
+                            name = 'Artsiom Korzun'
+                            email = 'humanfault101@gmail.com'
+                            url = 'https://github.com/artsiomkorzun'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+project('gflog-api') {
+    dependencies {
+        compileOnly 'com.google.code.findbugs:jsr305:3.0.1'
+    }
+}
+
+project('gflog-core') {
+    dependencies {
+        compileOnly 'com.google.code.findbugs:jsr305:3.0.1'
+        api project(':gflog-api')
+
+        testImplementation 'org.mockito:mockito-core:3.5.11'
+    }
+}
+
+project('gflog-mail') {
+    dependencies {
+        api project(':gflog-core')
+        api 'javax.mail:mail:1.4.7'
+    }
+}
+
+project('gflog-jcl') {
+    dependencies {
+        api project(':gflog-api')
+        api 'commons-logging:commons-logging:1.2'
+    }
+}
+
+project('gflog-jul') {
+    dependencies {
+        api project(':gflog-api')
+        testImplementation project(':gflog-core')
+    }
+}
+
+project('gflog-slf4j') {
+    dependencies {
+        api project(':gflog-api')
+        api 'org.slf4j:slf4j-api:1.7.25'
+        testImplementation project(':gflog-core')
+    }
+}
+
+project('gflog-benchmark') {
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    jar {
+        manifest {
+            attributes(
+                    'Main-Class': 'org.openjdk.jmh.Main'
+            )
+        }
+    }
+
+    dependencies {
+        annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.27'
+        implementation 'org.openjdk.jmh:jmh-core:1.27'
+        implementation project(':gflog-core')
+    }
+}
+
+project('gflog-sample') {
+    dependencies {
+        implementation project(':gflog-core')
+    }
+}
+
+def publishingProjects = subprojects - project('gflog-benchmark') - project('gflog-sample')
+task publishAll(dependsOn: publishingProjects.collect { it.path + ":publish" }) {
+    group 'publishing'
+    description 'Publish All Artifacts'
+}
+
+wrapper {
+    gradleVersion = '6.7.1'
+    distributionType = Wrapper.DistributionType.BIN
+}

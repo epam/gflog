@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+    <appender name="gelf" factory="com.epam.deltix.gflog.core.appender.TcpAppenderFactory" host="localhost" port="5555"
+              connectTimeout="1s" reconnectInitialPeriod="1ms" sendTimeout="1s">
+        <layout factory="com.epam.deltix.gflog.core.layout.GelfLayoutFactory">
+            <additional-fields>
+                <entry key="container" value="sample"/>
+            </additional-fields>
+        </layout>
+    </appender>
+
+    <logger>
+        <appender-ref ref="gelf"/>
+    </logger>
+
+</config>

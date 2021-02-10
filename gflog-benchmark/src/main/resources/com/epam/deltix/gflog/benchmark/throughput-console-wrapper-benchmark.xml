@@ -1,0 +1,13 @@
+<config>
+
+    <appender name="console" factory="com.epam.deltix.gflog.core.appender.ConsoleAppenderFactory" wrap="true">
+        <layout template="%d %p '%c' [%t] %m%n"/>
+    </appender>
+
+    <logger>
+        <appender-ref ref="console"/>
+    </logger>
+
+    <service entryEncoding="${encoding}"/>
+
+</config>

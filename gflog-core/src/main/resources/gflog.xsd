@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="config">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="appender" type="appenderType" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="logger" type="loggerType" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="service" type="serviceType" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="appenderType">
+        <xs:sequence>
+            <xs:element name="layout" type="layoutType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="appender-ref" type="appenderRefType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="factory" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:ID" use="required"/>
+        <xs:attribute name="level" type="levelType" use="optional" default="TRACE"/>
+        <xs:attribute name="bufferCapacity" type="xs:string" use="optional"/>
+        <xs:attribute name="flushCapacity" type="xs:string" use="optional"/>
+
+        <!--Console Appender-->
+        <xs:attribute name="wrap" type="xs:boolean" use="optional"/>
+        <xs:attribute name="stderr" type="xs:boolean" use="optional"/>
+
+        <!--Daily Rolling Appender-->
+        <xs:attribute name="append" type="xs:boolean" use="optional"/>
+        <xs:attribute name="file" type="xs:string" use="optional"/>
+        <xs:attribute name="fileSuffixTemplate" type="xs:string" use="optional"/>
+        <xs:attribute name="zoneId" type="xs:string" use="optional"/>
+        <xs:attribute name="maxFiles" type="xs:integer" use="optional"/>
+        <xs:attribute name="maxFileSize" type="xs:string" use="optional"/>
+
+        <!--Safe Appender-->
+        <xs:attribute name="maxEntriesPerSecond" type="xs:string" use="optional"/>
+
+        <!--Tcp Appender-->
+        <xs:attribute name="host" type="xs:string" use="optional"/>
+        <xs:attribute name="port" type="xs:positiveInteger" use="optional"/>
+        <xs:attribute name="connectTimeout" type="xs:string" use="optional"/>
+        <xs:attribute name="reconnectInitialPeriod" type="xs:string" use="optional"/>
+        <xs:attribute name="reconnectMaxPeriod" type="xs:string" use="optional"/>
+        <xs:attribute name="sendTimeout" type="xs:string" use="optional"/>
+        <xs:attribute name="socketTcpNoDelay" type="xs:boolean" use="optional"/>
+        <xs:attribute name="socketSendBufferCapacity" type="xs:string" use="optional"/>
+        <xs:attribute name="socketReceiveBufferCapacity" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="layoutType">
+        <!--Gelf Layout-->
+        <xs:sequence>
+            <xs:element name="additional-fields" type="mapType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="host" type="xs:string" use="optional"/>
+
+        <xs:attribute name="factory" type="xs:string" use="optional"
+                      default="com.epam.deltix.gflog.core.layout.TemplateLayoutFactory"/>
+        <xs:attribute name="template" type="xs:string" use="optional"/>
+        <xs:attribute name="zoneId" type="xs:string" use="optional"/>
+
+    </xs:complexType>
+
+    <xs:complexType name="mapType">
+        <xs:sequence>
+            <xs:element name="entry" type="entryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="entryType">
+        <xs:attribute name="key" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="levelType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="TRACE"/>
+            <xs:enumeration value="DEBUG"/>
+            <xs:enumeration value="INFO"/>
+            <xs:enumeration value="WARN"/>
+            <xs:enumeration value="ERROR"/>
+            <xs:enumeration value="FATAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="loggerType">
+        <xs:sequence>
+            <xs:element name="appender-ref" type="appenderRefType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="level" type="levelType" use="optional" default="INFO"/>
+    </xs:complexType>
+
+    <xs:complexType name="appenderRefType">
+        <xs:attribute name="ref" type="xs:IDREF" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="serviceType">
+        <xs:all>
+            <xs:element name="idle-strategy" type="idleStrategyType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="clock" type="clockType" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+        <xs:attribute name="factory" type="xs:string" use="optional"
+                      default="com.epam.deltix.gflog.core.service.AsyncLogServiceFactory"/>
+        <xs:attribute name="entryTruncationSuffix" type="xs:string" use="optional"/>
+        <xs:attribute name="entryEncoding" type="xs:string" use="optional"/>
+        <xs:attribute name="entryInitialCapacity" type="xs:string" use="optional"/>
+        <xs:attribute name="entryMaxCapacity" type="xs:string" use="optional"/>
+        <xs:attribute name="bufferCapacity" type="xs:string" use="optional"/>
+        <xs:attribute name="overflowStrategy" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="idleStrategyType">
+        <xs:attribute name="factory" type="xs:string" use="optional"
+                      default="com.epam.deltix.gflog.core.idle.IdleStrategyFactory"/>
+        <xs:attribute name="maxSpins" type="xs:string" use="optional"/>
+        <xs:attribute name="maxYields" type="xs:string" use="optional"/>
+        <xs:attribute name="minParkPeriod" type="xs:string" use="optional"/>
+        <xs:attribute name="maxParkPeriod" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="clockType">
+        <xs:attribute name="factory" type="xs:string" use="optional"
+                      default="com.epam.deltix.gflog.core.clock.ClockFactory"/>
+        <xs:attribute name="resolution" type="resolutionType" use="optional"/>
+    </xs:complexType>
+
+    <xs:simpleType name="resolutionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="HIGH"/>
+            <xs:enumeration value="LOW"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,11 @@
+<config>
+
+    <appender name="console" factory="com.epam.deltix.gflog.core.appender.ConsoleAppenderFactory">
+        <layout template="%d (${user.name}) %p '%c' [%t]: %m%n"/>
+    </appender>
+
+    <logger>
+        <appender-ref ref="console"/>
+    </logger>
+
+</config>

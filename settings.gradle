@@ -1,0 +1,10 @@
+rootProject.name = "gflog-all"
+
+include 'gflog-api',
+        'gflog-core',
+        'gflog-mail',
+        'gflog-jcl',
+        'gflog-jul',
+        'gflog-slf4j',
+        'gflog-benchmark',
+        'gflog-sample'

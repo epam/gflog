@@ -1,0 +1,11 @@
+<config>
+
+    <appender name="noop" factory="com.epam.deltix.gflog.benchmark.appender.NoOpAppenderFactory"/>
+
+    <logger>
+        <appender-ref ref="noop"/>
+    </logger>
+
+    <service entryEncoding="${encoding}"/>
+
+</config>

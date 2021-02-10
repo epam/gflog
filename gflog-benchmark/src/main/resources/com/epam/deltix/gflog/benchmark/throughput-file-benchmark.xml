@@ -1,0 +1,13 @@
+<config>
+
+    <appender name="file" factory="com.epam.deltix.gflog.core.appender.FileAppenderFactory" file="${temp-file}">
+        <layout template="%d %p '%c' [%t] %m%n"/>
+    </appender>
+
+    <logger>
+        <appender-ref ref="file"/>
+    </logger>
+
+    <service entryEncoding="${encoding}"/>
+
+</config>
