@@ -3,10 +3,10 @@ name: Continuous Integration
 on:
   workflow_dispatch:
   push:
-    branches: master
+    branches: main
   pull_request:
     types: [opened, synchronize]
-    branches: master
+    branches: main
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
