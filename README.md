@@ -1,5 +1,8 @@
-Garbage Free Log
+Garbage Free Log 
 =====
+
+![Continuous Integration](https://github.com/epam/GFLog/workflows/Continuous%20Integration/badge.svg?branch=main)
+
 High efficient garbage free log for Java 8+.
 
 # Artifacts
