@@ -32,6 +32,7 @@ subprojects {
     }
 
     java {
+        withJavadocJar()
         withSourcesJar()
     }
 
@@ -52,6 +53,8 @@ subprojects {
                 from components.java
 
                 pom {
+                    name = 'gflog'
+                    packaging = 'pom'
                     description = 'High efficient garbage free logging framework for Java 8+'
                     url = 'https://github.com/epam/GFLog'
 

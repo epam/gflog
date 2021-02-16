@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: release-*
+    branches: [release-*]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -81,6 +81,7 @@ jobs:
           versionRelease=`grep 'version=' gradle.properties | sed 's/version=\([^-]*\)/\1/'`
           echo $versionRelease
           git tag $versionRelease
+          git push origin $versionRelease
           git push origin origin/workflow-$GITHUB_RUN_ID:$GITHUB_REF
 
   publish:
