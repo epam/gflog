@@ -96,9 +96,11 @@ jobs:
       - name: Publish jars
         run: ./gradlew publishAll
         env:
-          MAVEN_REPOSITORY:   https://oss.sonatype.org/content/repositories/snapshots
-          MAVEN_USERNAME:     ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_PASSWORD:     ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_REPOSITORY: ${{ secrets.MAVEN_REPOSITORY }}
+          MAVEN_USERNAME:   ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD:   ${{ secrets.MAVEN_PASSWORD }}
+          SIGNING_KEY:      ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
   cleanup:
     name: Cleanup

@@ -5,9 +5,12 @@ plugins {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
+
+    ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     repositories {
         mavenCentral()
@@ -15,15 +18,6 @@ subprojects {
 
     dependencies {
         testImplementation 'junit:junit:4.12'
-    }
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        archiveClassifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    artifacts {
-        archives sourcesJar
     }
 
     compileTestJava.options.encoding = 'UTF-8'
@@ -37,10 +31,15 @@ subprojects {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(4) ?: 1
     }
 
+    java {
+        withSourcesJar()
+    }
+
     publishing {
         repositories {
             maven {
                 url System.getenv('MAVEN_REPOSITORY')
+
                 credentials {
                     username System.getenv('MAVEN_USERNAME')
                     password System.getenv('MAVEN_PASSWORD')
@@ -50,10 +49,7 @@ subprojects {
 
         publications {
             mavenJava(MavenPublication) {
-                artifactId = archivesBaseName
-
                 from components.java
-                artifact sourcesJar
 
                 pom {
                     description = 'High efficient garbage free logging framework for Java 8+'
@@ -82,6 +78,16 @@ subprojects {
                     }
                 }
             }
+        }
+
+        signing {
+            def signingKey = System.getenv("SIGNING_KEY")
+            def signingPassword = System.getenv("SIGNING_PASSWORD")
+
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.mavenJava
+
+            required { isReleaseVersion }
         }
     }
 }
@@ -161,6 +167,6 @@ task publishAll(dependsOn: publishingProjects.collect { it.path + ":publish" }) 
 }
 
 wrapper {
-    gradleVersion = '6.7.1'
+    gradleVersion = '6.8.2'
     distributionType = Wrapper.DistributionType.BIN
 }
