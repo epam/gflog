@@ -54,7 +54,7 @@ subprojects {
 
                 pom {
                     name = 'gflog'
-                    packaging = 'pom'
+                    packaging = 'jar'
                     description = 'High efficient garbage free logging framework for Java 8+'
                     url = 'https://github.com/epam/GFLog'
 
@@ -77,6 +77,8 @@ subprojects {
                             name = 'Artsiom Korzun'
                             email = 'humanfault101@gmail.com'
                             url = 'https://github.com/artsiomkorzun'
+                            organization = 'EPAM Systems'
+                            organizationUrl = 'https://www.epam.com/'
                         }
                     }
                 }
