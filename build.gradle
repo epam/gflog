@@ -57,12 +57,12 @@ subprojects {
 
                 pom {
                     description = 'High efficient garbage free logging framework for Java 8+'
-                    url = 'https://github.com/artsiomkorzun/gflog'
+                    url = 'https://github.com/epam/GFLog'
 
                     scm {
-                        connection = 'scm:git:https://github.com/artsiomkorzun/gflog.git'
-                        developerConnection = 'scm:git:https://github.com/artsiomkorzun/gflog.git'
-                        url = 'https://github.com/artsiomkorzun/gflog.git'
+                        connection = 'scm:git:https://github.com/epam/GFLog.git'
+                        developerConnection = 'scm:git:https://github.com/epam/GFLog.git'
+                        url = 'https://github.com/epam/GFLog.git'
                     }
 
                     licenses {
