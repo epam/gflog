@@ -103,7 +103,7 @@ jobs:
         with:
           java-version: 8
       - name: Publish jars
-        run: ./gradlew publishAll
+        run: ./gradlew publishAll --debug
         env:
           MAVEN_REPOSITORY: ${{ secrets.MAVEN_REPOSITORY }}
           MAVEN_USERNAME:   ${{ secrets.MAVEN_USERNAME }}
