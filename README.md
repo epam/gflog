@@ -2,6 +2,7 @@ Garbage Free Log
 =====
 
 [![GitHub](https://img.shields.io/badge/License-Apache--2.0-brightgreen)](https://github.com/epam/GFLog/blob/main/LICENSE)
+![Maven Central](https://img.shields.io/maven-central/v/com.epam.deltix/gflog-api)
 
 ![Continuous Integration](https://github.com/epam/GFLog/workflows/Continuous%20Integration/badge.svg?branch=main)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/epam/GFLog.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/epam/GFLog/context:java)
