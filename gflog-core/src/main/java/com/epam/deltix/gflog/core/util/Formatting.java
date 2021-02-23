@@ -1242,11 +1242,32 @@ public final class Formatting {
         // assert array != null;
         // assert offset >= 0;
 
-        final long leftPart = value / 100_000_000;
-        final long rightPart = value - 100_000_000 * leftPart;
+        final long left = value / 100_000_000;
 
-        formatUInt2Digits((int) leftPart, array, offset);
-        formatUInt8Digits((int) rightPart, array, offset + 2);
+        short digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (left << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset, digits);
+
+        long right = value - 100_000_000 * left;
+        long rightNew = 2748779070L * right >>> 38;
+        long rightRemainder = right - 100 * rightNew;
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightRemainder << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 8, digits);
+
+        right = 2748779070L * rightNew >>> 38;
+        rightRemainder = rightNew - 100 * right;
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightRemainder << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 6, digits);
+
+        rightNew = (int) (2748779070L * right >>> 38);
+        rightRemainder = right - 100 * rightNew;
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightRemainder << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 4, digits);
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightNew << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 2, digits);
 
         return offset + 10;
     }

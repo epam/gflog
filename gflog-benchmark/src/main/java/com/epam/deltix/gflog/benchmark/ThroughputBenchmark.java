@@ -62,17 +62,48 @@ public class ThroughputBenchmark {
     @TearDown
     public void destroy() throws Exception {
         LogConfigurator.unconfigure();
-        deleteTmpDirectory();
+        deleteTempDirectory();
     }
 
     @Benchmark
-    public void entry(final ThreadState state) {
+    public void baseline(final ThreadState state) {
+    }
+
+    @Benchmark
+    public void timestamp(final ThreadState state) {
+        System.currentTimeMillis();
+    }
+
+    @Benchmark
+    public void entryWith1Arg(final ThreadState state) {
         LOG.info().append(MESSAGE).commit();
     }
 
     @Benchmark
-    public void template(final ThreadState state) {
+    public void templateWith1Arg(final ThreadState state) {
         LOG.info(MESSAGE);
+    }
+
+    @Benchmark
+    public void entryWith5Args() {
+        LOG.info()
+                .append("Some array: [")
+                .append("string").append(',')
+                .append('c').append(',')
+                .append(1234567).append(',')
+                .append(12345678901234L).append(',')
+                .append("string").append(']')
+                .commit();
+    }
+
+    @Benchmark
+    public void templateWith5Args() {
+        LOG.info("Some array: [%s, %s, %s, %s, %s]")
+                .with("string")
+                .with('c')
+                .with(1234567)
+                .with(12345678901234L)
+                .with("string");
     }
 
     public static void main(final String[] args) throws RunnerException {
@@ -84,7 +115,7 @@ public class ThroughputBenchmark {
         new Runner(opt).run();
     }
 
-    private static void deleteTmpDirectory() throws Exception {
+    private static void deleteTempDirectory() throws Exception {
         final Path directory = Paths.get(TEMP_DIRECTORY);
 
         if (Files.exists(directory)) {

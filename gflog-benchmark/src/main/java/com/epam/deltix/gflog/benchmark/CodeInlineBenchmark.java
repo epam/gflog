@@ -13,17 +13,31 @@ public class CodeInlineBenchmark {
     private static final Log LOG = LogFactory.getLog(CodeInlineBenchmark.class);
 
     public static void main(final String[] args) {
-
         for (int i = 0; i < 10000000; i++) {
-            LOG.info()
-                    .append("String")
-                    .append(1234)
-                    .append(12345L)
-                    .appendTimestamp(0)
-                    .appendDecimal64(412344324321L)
-                    .appendAlphanumeric(432142342344343L)
-                    .commit();
+            entry();
+            template();
         }
+    }
+
+    private static void entry() {
+        LOG.info()
+                .append("String")
+                .append(1234)
+                .append(12345L)
+                .appendTimestamp(0)
+                .appendDecimal64(412344324321L)
+                .appendAlphanumeric(432142342344343L)
+                .commit();
+    }
+
+    private static void template() {
+        LOG.info("%s, %s, %s, %s, %s, %s")
+                .with("String")
+                .with(1234)
+                .with(12345L)
+                .withTimestamp(0)
+                .withDecimal64(412344324321L)
+                .withAlphanumeric(432142342344343L);
     }
 
 }
