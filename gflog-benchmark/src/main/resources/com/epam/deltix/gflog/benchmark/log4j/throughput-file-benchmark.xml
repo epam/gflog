@@ -1,0 +1,12 @@
+<Configuration name="Benchmark" status="info">
+    <Appenders>
+        <File name="file" fileName="${sys:temp-file}" immediateFlush="false">
+            <PatternLayout pattern="%d %p '%c' [%t] %m%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="file"/>
+        </Root>
+    </Loggers>
+</Configuration>

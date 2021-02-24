@@ -2,19 +2,19 @@ package com.epam.deltix.gflog.benchmark;
 
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
+import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
 import com.epam.deltix.gflog.core.LogConfigurator;
 import com.epam.deltix.gflog.core.idle.BusySpinIdleStrategy;
 import com.epam.deltix.gflog.core.idle.IdleStrategy;
 import net.openhft.affinity.Affinity;
 import org.HdrHistogram.Histogram;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
+import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
 
 /**
  * Shows safepoints: -XX:+UnlockDiagnosticVMOptions -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime
@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class LatencyBenchmark {
 
-    private static final String TEMP_DIRECTORY = "tmp";
-    private static final String TEMP_FILE = TEMP_DIRECTORY + "/latency-benchmark-" + UUID.randomUUID() + ".log";
+    // 100 bytes + (line separator 1-2)
+    // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
 
     private static final String[] CONFIGS = {
             "noop",
@@ -33,28 +33,6 @@ public class LatencyBenchmark {
             "file",
             "rolling-file"
     };
-
-    // 100 bytes + (line separator 1-2)
-    // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
-
-    private static final Exception EXCEPTION = newException(40);
-
-    private static final String ENCODING = System.getProperty("benchmark.encoding", "UTF-8"); // ASCII
-    private static final String MESSAGE = System.getProperty("benchmark.message", "Hello world!");
-    private static final String LOGGER = System.getProperty("benchmark.logger", "123456789012345678901234567890");
-    private static final String THREAD = System.getProperty("benchmark.thread", "12345678901234567890123");
-
-    private static final long WARMUP_S = Long.getLong("benchmark.warmup", 30);
-    private static final long DURATION_S = Long.getLong("benchmark.duration", 60);
-    private static final long INTERVAL_NS = Long.getLong("benchmark.interval", 10_000);
-
-    private static final int THREADS = Integer.getInteger("benchmark.threads", 1);
-    private static final int BATCH = Integer.getInteger("benchmark.batch", 1);
-    private static final int AFFINITY_BASE = Integer.getInteger("benchmark.affinity.base", -1);
-    private static final int AFFINITY_STEP = Integer.getInteger("benchmark.affinity.step", 1);
-
-    // causes a burst on a context switch if enabled, otherwise the guaranteed interval is preserved between operations
-    private static final boolean CATCHUP = Boolean.getBoolean("benchmark.catchup");
 
     private static final Map<String, Benchmark> BENCHMARKS = benchmarks();
 
@@ -74,8 +52,8 @@ public class LatencyBenchmark {
         Objects.requireNonNull(benchmark, "Benchmark is not found: " + name);
 
         final Runnable prepare = benchmark.prepare;
-        final Runnable command = benchmark.command;
         final Runnable cleanup = benchmark.cleanup;
+        final Consumer<BenchmarkState> command = benchmark.command;
 
         prepare.run();
 
@@ -86,7 +64,7 @@ public class LatencyBenchmark {
         }
     }
 
-    private static void run(final String name, final Runnable command) throws Exception {
+    private static void run(final String name, final Consumer<BenchmarkState> command) throws Exception {
         System.out.printf("Benchmark: %s. Warmup: %s s. Duration: %s s. Interval: %s ns. Threads: %s. Batch: %s. Catchup: %s. Affinity (base,step): %s,%s.%n",
                 name, WARMUP_S, DURATION_S, INTERVAL_NS, THREADS, BATCH, CATCHUP, AFFINITY_BASE, AFFINITY_STEP);
 
@@ -133,9 +111,11 @@ public class LatencyBenchmark {
 
     private static Map<String, Benchmark> benchmarks() {
         final List<Benchmark> benchmarks = new ArrayList<>();
+        final Runnable noop = () -> {
+        };
 
-        benchmarks.add(new Benchmark("baseline", LatencyBenchmark::baseline));
-        benchmarks.add(new Benchmark("timestamp", LatencyBenchmark::timestamp));
+        benchmarks.add(new Benchmark("baseline", noop, noop, LatencyBenchmark::baseline));
+        benchmarks.add(new Benchmark("timestamp", noop, noop, LatencyBenchmark::timestamp));
 
         for (final String config : CONFIGS) {
             final Runnable prepare = () -> prepare(config);
@@ -183,7 +163,7 @@ public class LatencyBenchmark {
     private static void prepare(final String config) {
         try {
             final Properties properties = new Properties();
-            properties.setProperty("temp-file", TEMP_FILE);
+            properties.setProperty("temp-file", generateTempFile("latency-benchmark"));
             properties.setProperty("encoding", ENCODING);
 
             final String configFile = "classpath:com/epam/deltix/gflog/benchmark/throughput-" + config + "-benchmark.xml";
@@ -202,123 +182,88 @@ public class LatencyBenchmark {
         }
     }
 
-    private static Histogram newHistogram() {
-        return new Histogram(TimeUnit.SECONDS.toNanos(1), 3);
+
+    private static void baseline(final BenchmarkState state) {
     }
 
-    private static void deleteTempDirectory() throws Exception {
-        final Path directory = Paths.get(TEMP_DIRECTORY);
-
-        if (Files.exists(directory)) {
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                    Files.deleteIfExists(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
-                    Files.deleteIfExists(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }
-    }
-
-    private static Exception newException(final int depth) {
-        if (depth <= 2) {
-            return new Exception("Exception");
-        }
-
-        return newException(depth - 1);
-    }
-
-    private static void baseline() {
-    }
-
-    private static void timestamp() {
+    private static void timestamp(final BenchmarkState state) {
         System.currentTimeMillis();
     }
 
-    private static void entry1Arg() {
+    private static void entry1Arg(final BenchmarkState state) {
         Holder.LOG.info().append(MESSAGE).commit();
     }
 
-    private static void template1Arg() {
+    private static void template1Arg(final BenchmarkState state) {
         Holder.LOG.info(MESSAGE);
     }
 
-    private static void entry5Args() {
+    public static void entry5Args(final BenchmarkState state) {
         Holder.LOG.info()
                 .append("Some array: [")
-                .append("string").append(',')
-                .append('c').append(',')
-                .append(1234567).append(',')
-                .append(12345678901234L).append(',')
-                .append("string").append(']')
+                .append(state.arg1).append(',')
+                .append(state.arg2).append(',')
+                .append(state.arg3).append(',')
+                .append(state.arg4).append(',')
+                .append(state.arg5).append(']')
                 .commit();
     }
 
-    private static void template5Args() {
-        Holder.LOG.info("Some array: [%s, %s, %s, %s, %s]")
-                .with("string")
-                .with('c')
-                .with(1234567)
-                .with(12345678901234L)
-                .with("string");
+    public static void template5Args(final BenchmarkState state) {
+        Holder.LOG.info("Some array: [%s,%s,%s,%s,%s]")
+                .with(state.arg1)
+                .with(state.arg2)
+                .with(state.arg3)
+                .with(state.arg4)
+                .with(state.arg5);
     }
 
-    private static void entry10Args() {
+    public static void entry10Args(final BenchmarkState state) {
         Holder.LOG.info()
                 .append("Some array: [")
-                .append("string").append(',')
-                .append('c').append(',')
-                .append(1234567).append(',')
-                .append(12345678901234L).append(',')
-                .append("string").append(',')
-                .append("string").append(',')
-                .append('c').append(',')
-                .append(1234567).append(',')
-                .append(12345678901234L).append(',')
-                .append("string").append(']')
+                .append(state.arg1).append(',')
+                .append(state.arg2).append(',')
+                .append(state.arg3).append(',')
+                .append(state.arg4).append(',')
+                .append(state.arg5).append(',')
+                .append(state.arg6).append(',')
+                .append(state.arg7).append(',')
+                .append(state.arg8).append(',')
+                .append(state.arg9).append(',')
+                .append(state.arg10).append(']')
                 .commit();
     }
 
-    private static void template10Args() {
-        Holder.LOG.info("Some array: [%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]")
-                .with("string")
-                .with('c')
-                .with(1234567)
-                .with(12345678901234L)
-                .with("string")
-                .with("string")
-                .with('c')
-                .with(1234567)
-                .with(12345678901234L)
-                .with("string");
+    public static void template10Args(final BenchmarkState state) {
+        Holder.LOG.info("Some array: [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]")
+                .with(state.arg1)
+                .with(state.arg2)
+                .with(state.arg3)
+                .with(state.arg4)
+                .with(state.arg5)
+                .with(state.arg6)
+                .with(state.arg7)
+                .with(state.arg8)
+                .with(state.arg9)
+                .with(state.arg10);
     }
 
-    private static void entryException() {
-        Holder.LOG.info().append("Exception: ").append(EXCEPTION).commit();
+    private static void entryException(final BenchmarkState state) {
+        Holder.LOG.info().append("Exception: ").append(state.exception).commit();
     }
 
-    private static void templateException() {
-        Holder.LOG.info("Exception: %s").with(EXCEPTION);
+    private static void templateException(final BenchmarkState state) {
+        Holder.LOG.info("Exception: %s").with(state.exception);
     }
 
-    private static final class Benchmark {
+    static final class Benchmark {
 
         private final String name;
         private final Runnable prepare;
         private final Runnable cleanup;
-        private final Runnable command;
+        private final Consumer<BenchmarkState> command;
 
-        public Benchmark(final String name, final Runnable command) {
-            this(name, LatencyBenchmark::baseline, LatencyBenchmark::baseline, command);
-        }
-
-        public Benchmark(final String name, final Runnable prepare, final Runnable cleanup, final Runnable command) {
+        public Benchmark(final String name, final Runnable prepare, final Runnable cleanup, final Consumer<BenchmarkState> command) {
             this.name = name;
             this.prepare = prepare;
             this.cleanup = cleanup;
@@ -327,24 +272,24 @@ public class LatencyBenchmark {
 
     }
 
-    private static final class Holder {
+    static final class Holder {
 
         private static final Log LOG = LogFactory.getLog(LOGGER);
 
     }
 
-    private static final class Runner extends Thread {
+    static final class Runner extends Thread {
 
         private final IdleStrategy idle = new BusySpinIdleStrategy();
         private final Histogram histogram = newHistogram();
-        private final Runnable command;
+        private final Consumer<BenchmarkState> command;
         private final AtomicBoolean active;
         private final AtomicBoolean measure;
         private final long interval;
         private final int batch;
         private final int affinity;
 
-        public Runner(final Runnable command,
+        public Runner(final Consumer<BenchmarkState> command,
                       final AtomicBoolean active,
                       final AtomicBoolean measure,
                       final long interval,
@@ -366,6 +311,8 @@ public class LatencyBenchmark {
                 Affinity.setAffinity(affinity);
             }
 
+            final BenchmarkState state = new BenchmarkState();
+
             long next = System.nanoTime();
             boolean warmup = true;
 
@@ -378,7 +325,7 @@ public class LatencyBenchmark {
                 }
 
                 for (int i = 0; i < batch; i++) {
-                    command.run();
+                    command.accept(state);
                 }
 
                 final long end = System.nanoTime();
