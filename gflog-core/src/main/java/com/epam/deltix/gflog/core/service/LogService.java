@@ -120,7 +120,7 @@ public abstract class LogService implements AutoCloseable {
                 }
 
                 for (int level = appender.getLevel().ordinal(); level < mask.length; level++) {
-                    mask[level] |= (1 << index);
+                    mask[level] |= (1L << index);
                 }
 
                 continue search;

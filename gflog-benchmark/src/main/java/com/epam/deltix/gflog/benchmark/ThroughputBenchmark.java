@@ -3,7 +3,9 @@ package com.epam.deltix.gflog.benchmark;
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
 import com.epam.deltix.gflog.core.LogConfigurator;
+import net.openhft.affinity.Affinity;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.ThreadParams;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -34,6 +36,9 @@ public class ThroughputBenchmark {
     private static final String MESSAGE = "Hello world!";
     private static final String LOGGER = "123456789012345678901234567890";
     private static final String THREAD = "12345678901234567890123";
+
+    private static final int AFFINITY_BASE = Integer.getInteger("benchmark.affinity.base", -1);
+    private static final int AFFINITY_STEP = Integer.getInteger("benchmark.affinity.step", 1);
 
     private static final Log LOG = LogFactory.getLog(LOGGER);
 
@@ -106,6 +111,38 @@ public class ThroughputBenchmark {
                 .with("string");
     }
 
+    @Benchmark
+    public void entryWith10Args() {
+        LOG.info()
+                .append("Some array: [")
+                .append("string").append(',')
+                .append('c').append(',')
+                .append(1234567).append(',')
+                .append(12345678901234L).append(',')
+                .append("string").append(',')
+                .append("string").append(',')
+                .append('c').append(',')
+                .append(1234567).append(',')
+                .append(12345678901234L).append(',')
+                .append("string").append(']')
+                .commit();
+    }
+
+    @Benchmark
+    public void templateWith10Args() {
+        LOG.info("Some array: [%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]")
+                .with("string")
+                .with('c')
+                .with(1234567)
+                .with(12345678901234L)
+                .with("string")
+                .with("string")
+                .with('c')
+                .with(1234567)
+                .with(12345678901234L)
+                .with("string");
+    }
+
     public static void main(final String[] args) throws RunnerException {
         final Options opt = new OptionsBuilder()
                 .include(ThroughputBenchmark.class.getName())
@@ -139,8 +176,15 @@ public class ThroughputBenchmark {
     public static class ThreadState {
 
         @Setup
-        public void setup() {
+        public void setup(final ThreadParams params) {
             Thread.currentThread().setName(THREAD);
+
+            if (AFFINITY_BASE >= 0 && AFFINITY_STEP >= 0) {
+                final int index = params.getThreadIndex();
+                final int affinity = AFFINITY_BASE + index * AFFINITY_STEP;
+
+                Affinity.setAffinity(affinity);
+            }
         }
 
     }
