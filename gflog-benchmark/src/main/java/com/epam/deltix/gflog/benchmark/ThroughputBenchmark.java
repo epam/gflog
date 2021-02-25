@@ -42,17 +42,17 @@ public class ThroughputBenchmark {
     public String encoding;
 
     @Setup
-    public void setup() throws Exception {
+    public void prepare() throws Exception {
         final Properties properties = new Properties();
         properties.setProperty("temp-file", generateTempFile("gflog-throughput-benchmark"));
         properties.setProperty("encoding", encoding);
 
-        final String configFile = "classpath:com/epam/deltix/gflog/benchmark/throughput-" + config + "-benchmark.xml";
+        final String configFile = "classpath:com/epam/deltix/gflog/benchmark/gflog-" + config + "-benchmark.xml";
         LogConfigurator.configure(configFile, properties);
     }
 
     @TearDown
-    public void destroy() throws Exception {
+    public void cleanup() throws Exception {
         LogConfigurator.unconfigure();
         deleteTempDirectory();
     }

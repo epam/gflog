@@ -35,9 +35,9 @@ public class Log4jThroughputBenchmark {
     public String config;
 
     @Setup
-    public void setup() throws Exception {
+    public void prepare() throws Exception {
         //System.setProperty("log4j.debug", "true");
-        System.setProperty("log4j.configurationFile", "com/epam/deltix/gflog/benchmark/log4j/throughput-" + config + "-benchmark.xml");
+        System.setProperty("log4j.configurationFile", "com/epam/deltix/gflog/benchmark/log4j/log4j-" + config + "-benchmark.xml");
         System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
         System.setProperty("AsyncLogger.RingBufferSize", "262144");
         System.setProperty("AsyncLogger.WaitStrategy", "Yield");
@@ -47,7 +47,7 @@ public class Log4jThroughputBenchmark {
     }
 
     @TearDown
-    public void destroy() throws Exception {
+    public void cleanup() throws Exception {
         LogManager.shutdown();
         deleteTempDirectory();
     }
@@ -107,7 +107,7 @@ public class Log4jThroughputBenchmark {
 
     }
 
-    public static final class Holder {
+    private static final class Holder {
 
         private static final Logger LOG = LogManager.getLogger(LOGGER);
 

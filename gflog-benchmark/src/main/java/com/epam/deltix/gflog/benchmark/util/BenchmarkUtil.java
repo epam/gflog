@@ -5,6 +5,7 @@ import org.HdrHistogram.Histogram;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -70,6 +71,32 @@ public final class BenchmarkUtil {
 
         exception.setStackTrace(stack);
         return exception;
+    }
+
+    public static void printHelp(final Map<String, Benchmark> benchmarks) {
+        System.out.printf("No benchmarks specified to run. Sample: bench1 bench2 bench3.%n");
+        printOptions();
+        printBenchmarks(benchmarks);
+    }
+
+    public static void printOptions() {
+        System.out.printf("%nProperties (jvm-opts):%n");
+        System.out.printf("\tbenchmark.logger          %-35s (Logger name to log under)%n", LOGGER);
+        System.out.printf("\tbenchmark.thread          %-35s (Thread name to log under)%n", THREAD);
+        System.out.printf("\tbenchmark.warmup          %-35s (Warmup in seconds)%n", WARMUP_S);
+        System.out.printf("\tbenchmark.duration        %-35s (Duration in seconds)%n", DURATION_S);
+        System.out.printf("\tbenchmark.interval        %-35s (Interval between operations in nanoseconds)%n", INTERVAL_NS);
+        System.out.printf("\tbenchmark.threads         %-35s (Logging threads)%n", THREADS);
+        System.out.printf("\tbenchmark.catchup         %-35s (Instant catchup if lagging behind)%n", CATCHUP);
+        System.out.printf("\tbenchmark.affinity.base   %-35s (Logging threads affinity base)%n", AFFINITY_BASE);
+        System.out.printf("\tbenchmark.affinity.step   %-35s (Logging threads affinity step)%n", AFFINITY_STEP);
+    }
+
+    public static void printBenchmarks(final Map<String, Benchmark> benchmarks) {
+        System.out.printf("%nBenchmarks (cmd-args):%n");
+        for (final String benchmark : benchmarks.keySet()) {
+            System.out.printf("\t%s%n", benchmark);
+        }
     }
 
 }
