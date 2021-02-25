@@ -547,7 +547,8 @@ abstract class LogLimitedEntry implements AppendableEntry {
         final boolean sign = (value < 0);
         final int exponent = (int) ((value >>> DECIMAL_64_EXPONENT_SHIFT) & DECIMAL_64_EXPONENT_MASK) - DECIMAL_64_EXPONENT_BIAS;
 
-        formatDecimal64(sign, exponent, significand);
+        ensureSpace(maxLengthOfDecimal64(exponent));
+        length = Formatting.formatDecimal64(sign, exponent, significand, array, length);
     }
 
     final void formatSpecialDecimal64(long value) {
@@ -573,10 +574,6 @@ abstract class LogLimitedEntry implements AppendableEntry {
         final boolean sign = (value < 0);
         final int exponent = (int) ((value >>> DECIMAL_64_EXPONENT_SHIFT_SPECIAL) & DECIMAL_64_EXPONENT_MASK) - DECIMAL_64_EXPONENT_BIAS;
 
-        formatDecimal64(sign, exponent, significand);
-    }
-
-    final void formatDecimal64(final boolean sign, final int exponent, final @Nonnegative long significand) {
         ensureSpace(maxLengthOfDecimal64(exponent));
         length = Formatting.formatDecimal64(sign, exponent, significand, array, length);
     }
