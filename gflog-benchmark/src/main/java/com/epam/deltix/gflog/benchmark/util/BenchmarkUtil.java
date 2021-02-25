@@ -1,13 +1,15 @@
 package com.epam.deltix.gflog.benchmark.util;
 
-import com.epam.deltix.gflog.core.LogConfigurator;
 import org.HdrHistogram.Histogram;
 import org.openjdk.jol.info.GraphLayout;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
@@ -34,28 +36,6 @@ public final class BenchmarkUtil {
     public static final boolean CATCHUP = Boolean.getBoolean("benchmark.catchup");
 
     public static final Exception EXCEPTION = newException(40);
-
-    public static void prepare(final String config, final String encoding) {
-        try {
-            final Properties properties = new Properties();
-            properties.setProperty("temp-file", "gflog-" + config + "-benchmark.log");
-            properties.setProperty("encoding", encoding);
-
-            final String configFile = "classpath:com/epam/deltix/gflog/benchmark/gflog-" + config + "-benchmark.xml";
-            LogConfigurator.configure(configFile, properties);
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void cleanup() {
-        try {
-            LogConfigurator.unconfigure();
-            deleteTempDirectory();
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public static String generateTempFile(final String prefix) {
         return TEMP_DIRECTORY + "/" + prefix + "-" + UUID.randomUUID() + ".log";

@@ -1,9 +1,6 @@
-package com.epam.deltix.gflog.benchmark;
+package com.epam.deltix.gflog.benchmark.gflog;
 
-import com.epam.deltix.gflog.api.Log;
-import com.epam.deltix.gflog.api.LogFactory;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
-import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
 import net.openhft.affinity.Affinity;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.ThreadParams;
@@ -23,7 +20,7 @@ import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Threads(1)
-public class ThroughputBenchmark {
+public class GflogThroughputBenchmark {
 
     // 100 bytes + (line separator 1-2)
     // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
@@ -42,12 +39,12 @@ public class ThroughputBenchmark {
 
     @Setup
     public void prepare() {
-        BenchmarkUtil.prepare(config, encoding);
+        GflogBenchmarkUtil.prepare(config, encoding);
     }
 
     @TearDown
     public void cleanup() {
-        BenchmarkUtil.cleanup();
+        GflogBenchmarkUtil.cleanup();
     }
 
     @Benchmark
@@ -61,71 +58,37 @@ public class ThroughputBenchmark {
 
     @Benchmark
     public void entry1Arg(final ThreadState state) {
-        Holder.LOG.info().append(MESSAGE).commit();
+        GflogBenchmarkUtil.entry1Arg(state);
     }
 
     @Benchmark
     public void template1Arg(final ThreadState state) {
-        Holder.LOG.info(MESSAGE);
+        GflogBenchmarkUtil.template1Arg(state);
     }
 
     @Benchmark
     public void entry5Args(final ThreadState state) {
-        Holder.LOG.info()
-                .append("Some array: [")
-                .append(state.arg1).append(',')
-                .append(state.arg2).append(',')
-                .append(state.arg3).append(',')
-                .append(state.arg4).append(',')
-                .append(state.arg5).append(']')
-                .commit();
+        GflogBenchmarkUtil.entry5Args(state);
     }
 
     @Benchmark
     public void template5Args(final ThreadState state) {
-        Holder.LOG.info("Some array: [%s,%s,%s,%s,%s]")
-                .with(state.arg1)
-                .with(state.arg2)
-                .with(state.arg3)
-                .with(state.arg4)
-                .with(state.arg5);
+        GflogBenchmarkUtil.template5Args(state);
     }
 
     @Benchmark
     public void entry10Args(final ThreadState state) {
-        Holder.LOG.info()
-                .append("Some array: [")
-                .append(state.arg1).append(',')
-                .append(state.arg2).append(',')
-                .append(state.arg3).append(',')
-                .append(state.arg4).append(',')
-                .append(state.arg5).append(',')
-                .append(state.arg6).append(',')
-                .append(state.arg7).append(',')
-                .append(state.arg8).append(',')
-                .append(state.arg9).append(',')
-                .append(state.arg10).append(']')
-                .commit();
+        GflogBenchmarkUtil.entry10Args(state);
     }
 
     @Benchmark
     public void template10Args(final ThreadState state) {
-        Holder.LOG.info("Some array: [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]")
-                .with(state.arg1)
-                .with(state.arg2)
-                .with(state.arg3)
-                .with(state.arg4)
-                .with(state.arg5)
-                .with(state.arg6)
-                .with(state.arg7)
-                .with(state.arg8)
-                .with(state.arg9)
-                .with(state.arg10);
+        GflogBenchmarkUtil.template10Args(state);
     }
 
     public static void main(final String[] args) throws RunnerException {
         final Options opt = new OptionsBuilder()
-                .include(ThroughputBenchmark.class.getName())
+                .include(GflogThroughputBenchmark.class.getName())
                 // .addProfiler(GCProfiler.class)
                 .build();
 
@@ -146,12 +109,6 @@ public class ThroughputBenchmark {
                 Affinity.setAffinity(affinity);
             }
         }
-
-    }
-
-    private static final class Holder {
-
-        private static final Log LOG = LogFactory.getLog(LOGGER);
 
     }
 

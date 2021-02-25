@@ -1,7 +1,5 @@
-package com.epam.deltix.gflog.benchmark;
+package com.epam.deltix.gflog.benchmark.util;
 
-import com.epam.deltix.gflog.benchmark.util.BenchmarkDescriptor;
-import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
 import com.epam.deltix.gflog.core.idle.BusySpinIdleStrategy;
 import com.epam.deltix.gflog.core.idle.IdleStrategy;
 import net.openhft.affinity.Affinity;
@@ -22,7 +20,7 @@ import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
  */
 public final class LatencyBenchmarkRunner {
 
-    protected final Map<String, BenchmarkDescriptor> all;
+    private final Map<String, BenchmarkDescriptor> all;
 
     public LatencyBenchmarkRunner(final Map<String, BenchmarkDescriptor> all) {
         this.all = all;

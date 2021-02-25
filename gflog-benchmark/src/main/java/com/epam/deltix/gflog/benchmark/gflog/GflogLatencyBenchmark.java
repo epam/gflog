@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark.log4j;
+package com.epam.deltix.gflog.benchmark.gflog;
 
 import com.epam.deltix.gflog.benchmark.util.BenchmarkDescriptor;
 import com.epam.deltix.gflog.benchmark.util.LatencyBenchmarkRunner;
@@ -8,19 +8,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.ENCODING;
+
 /**
  * Shows safepoints: -XX:+UnlockDiagnosticVMOptions -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime
  * Shows details: -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1
  * Adjusts interval: -XX:GuaranteedSafepointInterval=1200000
  */
-public class Log4jLatencyBenchmark {
+public class GflogLatencyBenchmark {
 
     // 100 bytes + (line separator 1-2)
     // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
 
     private static final String[] CONFIGS = {
             "noop",
+            /*"console-direct",
+            "console-wrapper",*/
             "file",
+            "rolling-file"
     };
 
     public static void main(final String[] args) throws Exception {
@@ -39,12 +44,18 @@ public class Log4jLatencyBenchmark {
         benchmarks.add(new BenchmarkDescriptor("timestamp", noop, noop, LatencyBenchmarkRunner::timestamp));
 
         for (final String config : CONFIGS) {
-            final Runnable prepare = () -> Log4jBenchmarkUtil.prepare(config);
-            final Runnable cleanup = Log4jBenchmarkUtil::cleanup;
+            final Runnable prepare = () -> GflogBenchmarkUtil.prepare(config, ENCODING);
+            final Runnable cleanup = GflogBenchmarkUtil::cleanup;
 
-            benchmarks.add(new BenchmarkDescriptor("log1Arg-" + config, prepare, cleanup, Log4jBenchmarkUtil::log1Arg));
-            benchmarks.add(new BenchmarkDescriptor("log5Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log5Args));
-            benchmarks.add(new BenchmarkDescriptor("log10Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log10Args));
+            benchmarks.add(new BenchmarkDescriptor("entry1Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::entry1Arg));
+            benchmarks.add(new BenchmarkDescriptor("entry5Args-" + config, prepare, cleanup, GflogBenchmarkUtil::entry5Args));
+            benchmarks.add(new BenchmarkDescriptor("entry10Args-" + config, prepare, cleanup, GflogBenchmarkUtil::entry10Args));
+            benchmarks.add(new BenchmarkDescriptor("entryException-" + config, prepare, cleanup, GflogBenchmarkUtil::entryException));
+
+            benchmarks.add(new BenchmarkDescriptor("template1Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::template1Arg));
+            benchmarks.add(new BenchmarkDescriptor("template5Args-" + config, prepare, cleanup, GflogBenchmarkUtil::template5Args));
+            benchmarks.add(new BenchmarkDescriptor("template10Args-" + config, prepare, cleanup, GflogBenchmarkUtil::template10Args));
+            benchmarks.add(new BenchmarkDescriptor("templateException-" + config, prepare, cleanup, GflogBenchmarkUtil::templateException));
         }
 
         final Map<String, BenchmarkDescriptor> map = new LinkedHashMap<>();

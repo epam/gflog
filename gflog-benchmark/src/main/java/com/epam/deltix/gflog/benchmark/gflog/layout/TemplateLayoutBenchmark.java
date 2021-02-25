@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark.layout;
+package com.epam.deltix.gflog.benchmark.gflog.layout;
 
 import com.epam.deltix.gflog.api.LogLevel;
 import com.epam.deltix.gflog.core.LogRecordBean;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class LayoutBenchmark {
+public class TemplateLayoutBenchmark {
 
     private final MutableBuffer buffer = UnsafeBuffer.allocateHeap(128);
     private final LogRecordBean record = new LogRecordBean();
@@ -68,7 +68,7 @@ public class LayoutBenchmark {
 
     public static void main(final String[] args) throws RunnerException {
         final Options opt = new OptionsBuilder()
-                .include(LayoutBenchmark.class.getName())
+                .include(TemplateLayoutBenchmark.class.getName())
                 .build();
 
         new Runner(opt).run();

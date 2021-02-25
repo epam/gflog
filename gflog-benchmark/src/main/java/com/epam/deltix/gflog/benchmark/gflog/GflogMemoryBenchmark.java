@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark;
+package com.epam.deltix.gflog.benchmark.gflog;
 
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
@@ -6,11 +6,11 @@ import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.cleanup;
-import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.prepare;
+import static com.epam.deltix.gflog.benchmark.gflog.GflogBenchmarkUtil.cleanup;
+import static com.epam.deltix.gflog.benchmark.gflog.GflogBenchmarkUtil.prepare;
 
 
-public class MemoryBenchmark {
+public class GflogMemoryBenchmark {
 
     public static void main(String[] args) throws Exception {
         prepare("noop", "UTF-8");
@@ -23,7 +23,7 @@ public class MemoryBenchmark {
     }
 
     private static void run() {
-        final Log log = LogFactory.getLog(MemoryBenchmark.class);
+        final Log log = LogFactory.getLog(GflogMemoryBenchmark.class);
         log.info("Hello there!");
 
         System.out.println("Before: " + BenchmarkUtil.memoryFootprint(log));

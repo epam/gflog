@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark;
+package com.epam.deltix.gflog.benchmark.gflog;
 
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
@@ -8,9 +8,9 @@ import com.epam.deltix.gflog.api.LogFactory;
  * Required JVM opts: -XX:+UnlockDiagnosticVMOptions -XX:+TraceClassLoading -XX:+LogCompilation
  * Optional JVM opts: -Dgflog.entry.encoding=UTF-8
  */
-public class CodeInlineBenchmark {
+public class GflogInliningBenchmark {
 
-    private static final Log LOG = LogFactory.getLog(CodeInlineBenchmark.class);
+    private static final Log LOG = LogFactory.getLog(GflogInliningBenchmark.class);
 
     public static void main(final String[] args) {
         for (int i = 0; i < 10000000; i++) {
