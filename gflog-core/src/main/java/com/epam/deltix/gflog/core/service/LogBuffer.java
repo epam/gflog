@@ -12,6 +12,7 @@ final class LogBuffer {
 
     private static final int MIN_CAPACITY = 64 * 1024;
     private static final int MAX_CAPACITY = 1024 * 1024 * 1024;
+    private static final int MAX_READ_LENGTH = 64 * 1024;
 
     private static final int TAIL_OFFSET = Util.DOUBLE_CACHE_LINE_SIZE - Util.SIZE_OF_LONG;
     private static final int HEAD_OFFSET = TAIL_OFFSET + Util.DOUBLE_CACHE_LINE_SIZE;
@@ -149,7 +150,7 @@ final class LogBuffer {
         final long head = UNSAFE.getLong(headAddress);
 
         final int index = (int) head & mask;
-        final int limit = Math.min(maxRecordLength, capacity - index);
+        final int limit = Math.min(capacity - index, MAX_READ_LENGTH);
 
         int read = 0;
 

@@ -1,6 +1,7 @@
 package com.epam.deltix.gflog.benchmark.util;
 
 import com.epam.deltix.gflog.core.util.Formatting;
+import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
