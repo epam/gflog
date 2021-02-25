@@ -155,6 +155,7 @@ project('gflog-benchmark') {
     dependencies {
         annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.27'
         implementation 'org.openjdk.jmh:jmh-core:1.27'
+        implementation 'org.openjdk.jol:jol-core:0.14'
         implementation 'org.hdrhistogram:HdrHistogram:2.1.12'
         implementation 'net.openhft:affinity:3.21ea1'
         implementation 'org.apache.logging.log4j:log4j-core:2.14.0'

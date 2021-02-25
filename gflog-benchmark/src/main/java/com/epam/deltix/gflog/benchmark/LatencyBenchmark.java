@@ -2,11 +2,14 @@ package com.epam.deltix.gflog.benchmark;
 
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
-import com.epam.deltix.gflog.benchmark.util.Benchmark;
+import com.epam.deltix.gflog.benchmark.util.BenchmarkDescriptor;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
-import com.epam.deltix.gflog.core.LogConfigurator;
+import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
 
@@ -29,7 +32,7 @@ public class LatencyBenchmark {
     };
 
     public static void main(final String[] args) throws Exception {
-        final Map<String, Benchmark> all = benchmarks();
+        final Map<String, BenchmarkDescriptor> all = benchmarks();
         final LatencyBenchmarkRunner runner = new LatencyBenchmarkRunner(all);
 
         runner.run(args);
@@ -101,54 +104,32 @@ public class LatencyBenchmark {
         Holder.LOG.info("Exception: %s").with(state.exception);
     }
 
-    private static void prepare(final String config) {
-        try {
-            final Properties properties = new Properties();
-            properties.setProperty("temp-file", generateTempFile("gflog-latency-benchmark"));
-            properties.setProperty("encoding", ENCODING);
-
-            final String configFile = "classpath:com/epam/deltix/gflog/benchmark/gflog-" + config + "-benchmark.xml";
-            LogConfigurator.configure(configFile, properties);
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void cleanup() {
-        try {
-            LogConfigurator.unconfigure();
-            deleteTempDirectory();
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static Map<String, Benchmark> benchmarks() {
-        final List<Benchmark> benchmarks = new ArrayList<>();
+    private static Map<String, BenchmarkDescriptor> benchmarks() {
+        final List<BenchmarkDescriptor> benchmarks = new ArrayList<>();
         final Runnable noop = () -> {
         };
 
-        benchmarks.add(new Benchmark("baseline", noop, noop, LatencyBenchmarkRunner::baseline));
-        benchmarks.add(new Benchmark("timestamp", noop, noop, LatencyBenchmarkRunner::timestamp));
+        benchmarks.add(new BenchmarkDescriptor("baseline", noop, noop, LatencyBenchmarkRunner::baseline));
+        benchmarks.add(new BenchmarkDescriptor("timestamp", noop, noop, LatencyBenchmarkRunner::timestamp));
 
         for (final String config : CONFIGS) {
-            final Runnable prepare = () -> prepare(config);
-            final Runnable cleanup = LatencyBenchmark::cleanup;
+            final Runnable prepare = () -> BenchmarkUtil.prepare(config, ENCODING);
+            final Runnable cleanup = BenchmarkUtil::cleanup;
 
-            benchmarks.add(new Benchmark("entry1Arg-" + config, prepare, cleanup, LatencyBenchmark::entry1Arg));
-            benchmarks.add(new Benchmark("entry5Args-" + config, prepare, cleanup, LatencyBenchmark::entry5Args));
-            benchmarks.add(new Benchmark("entry10Args-" + config, prepare, cleanup, LatencyBenchmark::entry10Args));
-            benchmarks.add(new Benchmark("entryException-" + config, prepare, cleanup, LatencyBenchmark::entryException));
+            benchmarks.add(new BenchmarkDescriptor("entry1Arg-" + config, prepare, cleanup, LatencyBenchmark::entry1Arg));
+            benchmarks.add(new BenchmarkDescriptor("entry5Args-" + config, prepare, cleanup, LatencyBenchmark::entry5Args));
+            benchmarks.add(new BenchmarkDescriptor("entry10Args-" + config, prepare, cleanup, LatencyBenchmark::entry10Args));
+            benchmarks.add(new BenchmarkDescriptor("entryException-" + config, prepare, cleanup, LatencyBenchmark::entryException));
 
-            benchmarks.add(new Benchmark("template1Arg-" + config, prepare, cleanup, LatencyBenchmark::template1Arg));
-            benchmarks.add(new Benchmark("template5Args-" + config, prepare, cleanup, LatencyBenchmark::template5Args));
-            benchmarks.add(new Benchmark("template10Args-" + config, prepare, cleanup, LatencyBenchmark::template10Args));
-            benchmarks.add(new Benchmark("templateException-" + config, prepare, cleanup, LatencyBenchmark::templateException));
+            benchmarks.add(new BenchmarkDescriptor("template1Arg-" + config, prepare, cleanup, LatencyBenchmark::template1Arg));
+            benchmarks.add(new BenchmarkDescriptor("template5Args-" + config, prepare, cleanup, LatencyBenchmark::template5Args));
+            benchmarks.add(new BenchmarkDescriptor("template10Args-" + config, prepare, cleanup, LatencyBenchmark::template10Args));
+            benchmarks.add(new BenchmarkDescriptor("templateException-" + config, prepare, cleanup, LatencyBenchmark::templateException));
         }
 
-        final Map<String, Benchmark> map = new LinkedHashMap<>();
+        final Map<String, BenchmarkDescriptor> map = new LinkedHashMap<>();
 
-        for (final Benchmark benchmark : benchmarks) {
+        for (final BenchmarkDescriptor benchmark : benchmarks) {
             final String name = benchmark.getName();
             map.put(name, benchmark);
         }

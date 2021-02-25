@@ -2,8 +2,6 @@ package com.epam.deltix.gflog.benchmark.log4j;
 
 import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
 import net.openhft.affinity.Affinity;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.ThreadParams;
 import org.openjdk.jmh.runner.Runner;
@@ -14,7 +12,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.util.concurrent.TimeUnit;
 
 import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
-import static org.apache.logging.log4j.util.Unbox.box;
 
 @Warmup(iterations = 3, time = 5)
 @Measurement(iterations = 3, time = 15)
@@ -36,20 +33,12 @@ public class Log4jThroughputBenchmark {
 
     @Setup
     public void prepare() throws Exception {
-        //System.setProperty("log4j.debug", "true");
-        System.setProperty("log4j.configurationFile", "com/epam/deltix/gflog/benchmark/log4j/log4j-" + config + "-benchmark.xml");
-        System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
-        System.setProperty("AsyncLogger.RingBufferSize", "262144");
-        System.setProperty("AsyncLogger.WaitStrategy", "Yield");
-        System.setProperty("log4j2.enable.threadlocals", "true");
-        System.setProperty("log4j2.enable.direct.encoders", "true");
-        System.setProperty("temp-file", generateTempFile("log4j-throughput-benchmark"));
+        Log4jBenchmarkUtil.prepare(config);
     }
 
     @TearDown
     public void cleanup() throws Exception {
-        LogManager.shutdown();
-        deleteTempDirectory();
+        Log4jBenchmarkUtil.cleanup();
     }
 
     @Benchmark
@@ -63,22 +52,17 @@ public class Log4jThroughputBenchmark {
 
     @Benchmark
     public void log1Arg(final ThreadState state) {
-        Holder.LOG.info(MESSAGE);
+        Log4jBenchmarkUtil.log1Arg(state);
     }
 
     @Benchmark
     public void log5Args(final ThreadState state) {
-        Holder.LOG.info("Some array: [{},{},{},{},{}]",
-                state.arg1, box(state.arg2), box(state.arg3), box(state.arg4), state.arg5
-        );
+        Log4jBenchmarkUtil.log5Args(state);
     }
 
     @Benchmark
     public void log10Args(final ThreadState state) {
-        Holder.LOG.info("Some array: [{},{},{},{},{},{},{},{},{},{}]",
-                state.arg1, box(state.arg2), box(state.arg3), box(state.arg4), state.arg5,
-                state.arg6, box(state.arg7), box(state.arg8), box(state.arg9), state.arg10
-        );
+        Log4jBenchmarkUtil.log10Args(state);
     }
 
     public static void main(final String[] args) throws RunnerException {
@@ -104,12 +88,6 @@ public class Log4jThroughputBenchmark {
                 Affinity.setAffinity(affinity);
             }
         }
-
-    }
-
-    private static final class Holder {
-
-        private static final Logger LOG = LogManager.getLogger(LOGGER);
 
     }
 

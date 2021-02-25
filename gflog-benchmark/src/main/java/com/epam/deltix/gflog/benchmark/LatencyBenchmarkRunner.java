@@ -1,6 +1,6 @@
 package com.epam.deltix.gflog.benchmark;
 
-import com.epam.deltix.gflog.benchmark.util.Benchmark;
+import com.epam.deltix.gflog.benchmark.util.BenchmarkDescriptor;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
 import com.epam.deltix.gflog.core.idle.BusySpinIdleStrategy;
 import com.epam.deltix.gflog.core.idle.IdleStrategy;
@@ -22,9 +22,9 @@ import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
  */
 public final class LatencyBenchmarkRunner {
 
-    protected final Map<String, Benchmark> all;
+    protected final Map<String, BenchmarkDescriptor> all;
 
-    public LatencyBenchmarkRunner(final Map<String, Benchmark> all) {
+    public LatencyBenchmarkRunner(final Map<String, BenchmarkDescriptor> all) {
         this.all = all;
     }
 
@@ -40,7 +40,7 @@ public final class LatencyBenchmarkRunner {
     }
 
     private void run(final String name) throws Exception {
-        final Benchmark benchmark = all.get(name);
+        final BenchmarkDescriptor benchmark = all.get(name);
         Objects.requireNonNull(benchmark, "Benchmark is not found: " + name);
 
         final Runnable prepare = benchmark.getPrepare();

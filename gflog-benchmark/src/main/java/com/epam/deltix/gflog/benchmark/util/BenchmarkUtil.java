@@ -1,12 +1,13 @@
 package com.epam.deltix.gflog.benchmark.util;
 
+import com.epam.deltix.gflog.core.LogConfigurator;
 import org.HdrHistogram.Histogram;
+import org.openjdk.jol.info.GraphLayout;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -26,12 +27,35 @@ public final class BenchmarkUtil {
     public static final int THREADS = Integer.getInteger("benchmark.threads", 1);
     public static final int BATCH = Integer.getInteger("benchmark.batch", 1);
 
-    // causes a burst on a context switch if enabled, otherwise the guaranteed interval is preserved between operations
-    public static final boolean CATCHUP = Boolean.getBoolean("benchmark.catchup");
     public static final int AFFINITY_BASE = Integer.getInteger("benchmark.affinity.base", -1);
     public static final int AFFINITY_STEP = Integer.getInteger("benchmark.affinity.step", 1);
 
+    // causes a burst on a context switch if enabled, otherwise the guaranteed interval is preserved between operations
+    public static final boolean CATCHUP = Boolean.getBoolean("benchmark.catchup");
+
     public static final Exception EXCEPTION = newException(40);
+
+    public static void prepare(final String config, final String encoding) {
+        try {
+            final Properties properties = new Properties();
+            properties.setProperty("temp-file", "gflog-" + config + "-benchmark.log");
+            properties.setProperty("encoding", encoding);
+
+            final String configFile = "classpath:com/epam/deltix/gflog/benchmark/gflog-" + config + "-benchmark.xml";
+            LogConfigurator.configure(configFile, properties);
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void cleanup() {
+        try {
+            LogConfigurator.unconfigure();
+            deleteTempDirectory();
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static String generateTempFile(final String prefix) {
         return TEMP_DIRECTORY + "/" + prefix + "-" + UUID.randomUUID() + ".log";
@@ -73,7 +97,7 @@ public final class BenchmarkUtil {
         return exception;
     }
 
-    public static void printHelp(final Map<String, Benchmark> benchmarks) {
+    public static void printHelp(final Map<String, BenchmarkDescriptor> benchmarks) {
         System.out.printf("No benchmarks specified to run. Sample: bench1 bench2 bench3.%n");
         printOptions();
         printBenchmarks(benchmarks);
@@ -92,11 +116,31 @@ public final class BenchmarkUtil {
         System.out.printf("\tbenchmark.affinity.step   %-35s (Logging threads affinity step)%n", AFFINITY_STEP);
     }
 
-    public static void printBenchmarks(final Map<String, Benchmark> benchmarks) {
+    public static void printBenchmarks(final Map<String, BenchmarkDescriptor> benchmarks) {
         System.out.printf("%nBenchmarks (cmd-args):%n");
         for (final String benchmark : benchmarks.keySet()) {
             System.out.printf("\t%s%n", benchmark);
         }
+    }
+
+    public static String memoryFootprint(final Object object) {
+        final GraphLayout layout = GraphLayout.parseInstance(object);
+
+        final String footprint = layout.toFootprint();
+        final String[] lines = footprint.split("\\r?\\n");
+
+        final Comparator<String> comparator = (row1, row2) -> {
+            final String[] columns1 = row1.split("\\s+");
+            final String[] columns2 = row2.split("\\s+");
+
+            final long sum1 = Long.parseLong(columns1[3]); // sum
+            final long sum2 = Long.parseLong(columns2[3]); // sum
+
+            return Long.compare(sum2, sum1);
+        };
+
+        Arrays.sort(lines, 2, lines.length - 1, comparator);
+        return String.join(System.lineSeparator(), lines);
     }
 
 }

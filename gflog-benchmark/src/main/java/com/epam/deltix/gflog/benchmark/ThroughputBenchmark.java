@@ -3,7 +3,7 @@ package com.epam.deltix.gflog.benchmark;
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
-import com.epam.deltix.gflog.core.LogConfigurator;
+import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
 import net.openhft.affinity.Affinity;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.ThreadParams;
@@ -12,7 +12,6 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
@@ -42,19 +41,13 @@ public class ThroughputBenchmark {
     public String encoding;
 
     @Setup
-    public void prepare() throws Exception {
-        final Properties properties = new Properties();
-        properties.setProperty("temp-file", generateTempFile("gflog-throughput-benchmark"));
-        properties.setProperty("encoding", encoding);
-
-        final String configFile = "classpath:com/epam/deltix/gflog/benchmark/gflog-" + config + "-benchmark.xml";
-        LogConfigurator.configure(configFile, properties);
+    public void prepare() {
+        BenchmarkUtil.prepare(config, encoding);
     }
 
     @TearDown
-    public void cleanup() throws Exception {
-        LogConfigurator.unconfigure();
-        deleteTempDirectory();
+    public void cleanup() {
+        BenchmarkUtil.cleanup();
     }
 
     @Benchmark
