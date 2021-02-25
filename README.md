@@ -8,7 +8,7 @@ Garbage Free Log
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/epam/GFLog.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/epam/GFLog/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/epam/GFLog.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/epam/GFLog/alerts/)
 
-High efficient garbage free log for Java 8+.
+Highly efficient garbage-free logger for Java 8+.
 
 # Artifacts
 
