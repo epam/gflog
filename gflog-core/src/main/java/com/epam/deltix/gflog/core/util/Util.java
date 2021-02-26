@@ -2,12 +2,16 @@ package com.epam.deltix.gflog.core.util;
 
 import sun.misc.Unsafe;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
+
+import static java.lang.invoke.MethodType.methodType;
 
 
 public final class Util {
@@ -54,6 +58,20 @@ public final class Util {
     public static final boolean BOUNDS_CHECK_ENABLED = PropertyUtil.getBoolean("gflog.bounds.check", true);
 
     public static final String LINE_SEPARATOR = System.lineSeparator();
+
+    private static final MethodHandle ON_SPIN_WAIT_METHOD_HANDLE;
+
+    static {
+        MethodHandle methodHandle = null;
+
+        try {
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+            methodHandle = lookup.findStatic(Thread.class, "onSpinWait", methodType(void.class));
+        } catch (final Exception ignore) {
+        }
+
+        ON_SPIN_WAIT_METHOD_HANDLE = methodHandle;
+    }
 
     private Util() {
     }
@@ -247,6 +265,16 @@ public final class Util {
         buffer.getBytes(0, bytes);
 
         return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public static void onSpinWait() {
+        if (ON_SPIN_WAIT_METHOD_HANDLE != null) {
+            try {
+                ON_SPIN_WAIT_METHOD_HANDLE.invokeExact();
+            } catch (final Throwable ignore) {
+                // ignore
+            }
+        }
     }
 
     /**

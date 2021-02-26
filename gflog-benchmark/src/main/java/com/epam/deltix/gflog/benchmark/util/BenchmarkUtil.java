@@ -113,8 +113,8 @@ public final class BenchmarkUtil {
             final String[] columns1 = row1.split("\\s+");
             final String[] columns2 = row2.split("\\s+");
 
-            final long sum1 = Long.parseLong(columns1[3]); // sum
-            final long sum2 = Long.parseLong(columns2[3]); // sum
+            final long sum1 = Long.parseLong(columns1[3]);
+            final long sum2 = Long.parseLong(columns2[3]);
 
             return Long.compare(sum2, sum1);
         };

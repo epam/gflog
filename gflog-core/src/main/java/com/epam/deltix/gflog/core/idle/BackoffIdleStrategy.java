@@ -1,5 +1,7 @@
 package com.epam.deltix.gflog.core.idle;
 
+import com.epam.deltix.gflog.core.util.Util;
+
 import java.util.concurrent.locks.LockSupport;
 
 @SuppressWarnings("unused")
@@ -76,6 +78,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
 
             case SPINNING:
                 if (++value <= maxSpins) {
+                    Util.onSpinWait();
                     break;
                 }
 

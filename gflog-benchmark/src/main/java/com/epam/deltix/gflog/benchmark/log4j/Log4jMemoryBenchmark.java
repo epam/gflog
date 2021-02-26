@@ -2,6 +2,7 @@ package com.epam.deltix.gflog.benchmark.log4j;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openjdk.jol.vm.VM;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -23,6 +24,8 @@ public class Log4jMemoryBenchmark {
     }
 
     private static void run() {
+        System.out.println(VM.current().details());
+
         final Logger log = LogManager.getLogger(Log4jMemoryBenchmark.class);
         log.info("Hello there!");
 

@@ -3,6 +3,7 @@ package com.epam.deltix.gflog.benchmark.gflog;
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
+import org.openjdk.jol.vm.VM;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -23,6 +24,8 @@ public class GflogMemoryBenchmark {
     }
 
     private static void run() {
+        System.out.println(VM.current().details());
+
         final Log log = LogFactory.getLog(GflogMemoryBenchmark.class);
         log.info("Hello there!");
 
