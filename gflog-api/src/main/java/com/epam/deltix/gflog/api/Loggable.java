@@ -1,12 +1,14 @@
 package com.epam.deltix.gflog.api;
 
 /**
- * Implement the interface to customize formatting logic.
+ * Provides a way to encapsulate formatting logic.
  */
 public interface Loggable {
 
     /**
-     * Appends an object content to the entry.
+     * Appends the object content to the entry.
+     *
+     * @param entry to append to.
      */
     void appendTo(final AppendableEntry entry);
 

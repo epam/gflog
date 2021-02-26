@@ -145,7 +145,11 @@ public final class Util {
     }
 
     /**
-     * Makes the platform dependent short.
+     * Makes the platform dependent short for the native byte order.
+     *
+     * @param b1 1 of 1|0.
+     * @param b0 0 of 1|0.
+     * @return the short value.
      */
     public static short makeShort(final int b1, final int b0) {
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
@@ -154,8 +158,14 @@ public final class Util {
     }
 
     /**
-     * Makes the short depending on the platform.
+     * Makes the platform dependent short for the specified byte order.
+     *
+     * @param b1        1 of 1|0.
+     * @param b0        0 of 1|0.
+     * @param byteOrder to make for.
+     * @return the short value.
      */
+    @Deprecated
     public static short makeShort(final int b1, final int b0, final ByteOrder byteOrder) {
         return (byteOrder == ByteOrder.LITTLE_ENDIAN) ?
                 (short) ((b0 << 8) | (b1)) :
@@ -163,7 +173,13 @@ public final class Util {
     }
 
     /**
-     * Makes the platform dependent int.
+     * Makes the platform dependent int for the native byte order.
+     *
+     * @param b3 3 of 3|2|1|0.
+     * @param b2 2 of 3|2|1|0.
+     * @param b1 1 of 3|2|1|0.
+     * @param b0 0 of 3|2|1|0.
+     * @return the int value.
      */
     public static int makeInt(final int b3, final int b2, final int b1, final int b0) {
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
@@ -172,14 +188,24 @@ public final class Util {
     }
 
     /**
-     * Makes the platform dependent long.
+     * Makes the platform dependent int for the native byte order.
+     *
+     * @param b7 7 of 7|6|5|4|3|2|1|0.
+     * @param b6 6 of 7|6|5|4|3|2|1|0.
+     * @param b5 5 of 7|6|5|4|3|2|1|0.
+     * @param b4 4 of 7|6|5|4|3|2|1|0.
+     * @param b3 3 of 7|6|5|4|3|2|1|0.
+     * @param b2 2 of 7|6|5|4|3|2|1|0.
+     * @param b1 1 of 7|6|5|4|3|2|1|0.
+     * @param b0 0 of 7|6|5|4|3|2|1|0.
+     * @return the long value.
      */
     public static long makeLong(final int b7, final int b6, final int b5, final int b4,
                                 final int b3, final int b2, final int b1, final int b0) {
 
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
-                (((long) b0 << 56) | ((long) b1 << 48) | ((long) b2 << 40) | ((long) b3 << 32) | ((long) b4 << 24) | (b5 << 16) | (b6 << 8) | b7) :
-                (((long) b7 << 56) | ((long) b6 << 48) | ((long) b5 << 40) | ((long) b4 << 32) | ((long) b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
+                (((long) b0 << 56) | ((long) b1 << 48) | ((long) b2 << 40) | ((long) b3 << 32) | ((long) b4 << 24) | ((long) b5 << 16) | ((long) b6 << 8) | b7) :
+                (((long) b7 << 56) | ((long) b6 << 48) | ((long) b5 << 40) | ((long) b4 << 32) | ((long) b3 << 24) | ((long) b2 << 16) | ((long) b1 << 8) | b0);
     }
 
     public static int codePointAt(final CharSequence sequence, final int index, final int end) {

@@ -11,6 +11,9 @@ public abstract class LogFactory {
 
     /**
      * Looks up the log instance for the class.
+     *
+     * @param clazz to look up for.
+     * @return the log instance for the specified clazz.
      */
     public static Log getLog(final Class<?> clazz) {
         return getLog(clazz.getCanonicalName());
@@ -18,11 +21,19 @@ public abstract class LogFactory {
 
     /**
      * Looks up the log instance for the name.
+     *
+     * @param name to look up for.
+     * @return the log instance for the specified name.
      */
     public static Log getLog(final String name) {
         return Implementation.INSTANCE.getLogger(name);
     }
 
+    /**
+     * Returns all available logs. The collection instance might be immutable.
+     *
+     * @return all logs.
+     */
     public static Collection<Log> getLogs() {
         return Implementation.INSTANCE.getLoggers();
     }
