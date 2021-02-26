@@ -23,16 +23,16 @@ class BenchmarkStatePadding {
 
 class BenchmarkStateFields extends BenchmarkStatePadding {
 
-    public String arg1 = "string";
-    public char arg2 = 'c';
-    public int arg3 = 1234567;
-    public long arg4 = 12345678901234L;
+    public String arg0 = "string";
+    public char arg1 = 'c';
+    public int arg2 = 1234567;
+    public long arg3 = 12345678901234L;
+    public String arg4 = "string";
     public String arg5 = "string";
-    public String arg6 = "string";
-    public char arg7 = 'c';
-    public int arg8 = 1234567;
-    public long arg9 = 12345678901234L;
-    public String arg10 = "string";
+    public char arg6 = 'c';
+    public int arg7 = 1234567;
+    public long arg8 = 12345678901234L;
+    public String arg9 = "string";
     public Throwable exception = BenchmarkUtil.EXCEPTION;
 
 }

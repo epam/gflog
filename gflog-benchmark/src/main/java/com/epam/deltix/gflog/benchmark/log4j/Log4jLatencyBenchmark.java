@@ -42,6 +42,7 @@ public class Log4jLatencyBenchmark {
             final Runnable prepare = () -> Log4jBenchmarkUtil.prepare(config);
             final Runnable cleanup = Log4jBenchmarkUtil::cleanup;
 
+            benchmarks.add(new BenchmarkDescriptor("log0Arg-" + config, prepare, cleanup, Log4jBenchmarkUtil::log0Arg));
             benchmarks.add(new BenchmarkDescriptor("log1Arg-" + config, prepare, cleanup, Log4jBenchmarkUtil::log1Arg));
             benchmarks.add(new BenchmarkDescriptor("log5Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log5Args));
             benchmarks.add(new BenchmarkDescriptor("log10Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log10Args));

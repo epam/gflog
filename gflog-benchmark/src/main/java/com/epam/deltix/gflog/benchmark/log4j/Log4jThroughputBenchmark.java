@@ -51,6 +51,11 @@ public class Log4jThroughputBenchmark {
     }
 
     @Benchmark
+    public void log0Arg(final ThreadState state) {
+        Log4jBenchmarkUtil.log0Arg(state);
+    }
+
+    @Benchmark
     public void log1Arg(final ThreadState state) {
         Log4jBenchmarkUtil.log1Arg(state);
     }

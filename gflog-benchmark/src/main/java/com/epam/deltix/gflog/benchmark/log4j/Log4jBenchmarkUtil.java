@@ -19,6 +19,9 @@ final class Log4jBenchmarkUtil {
         System.setProperty("log4j2.enable.threadlocals", "true");
         System.setProperty("log4j2.enable.direct.encoders", "true");
         System.setProperty("temp-file", generateTempFile("log4j-" + config + "-benchmark"));
+
+        deleteTempDirectory();
+        LogManager.exists(LOGGER); // forces lazy initialization
     }
 
     public static void cleanup() {
@@ -26,24 +29,28 @@ final class Log4jBenchmarkUtil {
             LogManager.shutdown();
             deleteTempDirectory();
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            // ignore
         }
     }
 
+    public static void log0Arg(final BenchmarkState state) {
+        Holder.LOG.info("Some array: []");
+    }
+
     public static void log1Arg(final BenchmarkState state) {
-        Holder.LOG.info(MESSAGE);
+        Holder.LOG.info("Some array: [{}]", state.arg0);
     }
 
     public static void log5Args(final BenchmarkState state) {
         Holder.LOG.info("Some array: [{},{},{},{},{}]",
-                state.arg1, box(state.arg2), box(state.arg3), box(state.arg4), state.arg5
+                state.arg0, box(state.arg1), box(state.arg2), box(state.arg3), state.arg4
         );
     }
 
     public static void log10Args(final BenchmarkState state) {
         Holder.LOG.info("Some array: [{},{},{},{},{},{},{},{},{},{}]",
-                state.arg1, box(state.arg2), box(state.arg3), box(state.arg4), state.arg5,
-                state.arg6, box(state.arg7), box(state.arg8), box(state.arg9), state.arg10
+                state.arg0, box(state.arg1), box(state.arg2), box(state.arg3), state.arg4,
+                state.arg5, box(state.arg6), box(state.arg7), box(state.arg8), state.arg9
         );
     }
 

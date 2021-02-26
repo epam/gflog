@@ -17,9 +17,6 @@ import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.ENCODING;
  */
 public class GflogLatencyBenchmark {
 
-    // 100 bytes + (line separator 1-2)
-    // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
-
     private static final String[] CONFIGS = {
             "noop",
             /*"console-direct",
@@ -47,11 +44,13 @@ public class GflogLatencyBenchmark {
             final Runnable prepare = () -> GflogBenchmarkUtil.prepare(config, ENCODING);
             final Runnable cleanup = GflogBenchmarkUtil::cleanup;
 
+            benchmarks.add(new BenchmarkDescriptor("entry0Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::entry0Arg));
             benchmarks.add(new BenchmarkDescriptor("entry1Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::entry1Arg));
             benchmarks.add(new BenchmarkDescriptor("entry5Args-" + config, prepare, cleanup, GflogBenchmarkUtil::entry5Args));
             benchmarks.add(new BenchmarkDescriptor("entry10Args-" + config, prepare, cleanup, GflogBenchmarkUtil::entry10Args));
             benchmarks.add(new BenchmarkDescriptor("entryException-" + config, prepare, cleanup, GflogBenchmarkUtil::entryException));
 
+            benchmarks.add(new BenchmarkDescriptor("template0Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::template0Arg));
             benchmarks.add(new BenchmarkDescriptor("template1Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::template1Arg));
             benchmarks.add(new BenchmarkDescriptor("template5Args-" + config, prepare, cleanup, GflogBenchmarkUtil::template5Args));
             benchmarks.add(new BenchmarkDescriptor("template10Args-" + config, prepare, cleanup, GflogBenchmarkUtil::template10Args));

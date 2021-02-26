@@ -57,6 +57,16 @@ public class GflogThroughputBenchmark {
     }
 
     @Benchmark
+    public void entry0Arg(final ThreadState state) {
+        GflogBenchmarkUtil.entry0Arg(state);
+    }
+
+    @Benchmark
+    public void template0Arg(final ThreadState state) {
+        GflogBenchmarkUtil.template0Arg(state);
+    }
+
+    @Benchmark
     public void entry1Arg(final ThreadState state) {
         GflogBenchmarkUtil.entry1Arg(state);
     }

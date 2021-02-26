@@ -18,7 +18,6 @@ public final class BenchmarkUtil {
     public static final String TEMP_DIRECTORY = "tmp";
 
     public static final String ENCODING = System.getProperty("benchmark.encoding", "UTF-8"); // ASCII
-    public static final String MESSAGE = System.getProperty("benchmark.message", "Hello world!");
     public static final String LOGGER = System.getProperty("benchmark.logger", "123456789012345678901234567890");
     public static final String THREAD = System.getProperty("benchmark.thread", "12345678901234567890123");
 
@@ -41,23 +40,29 @@ public final class BenchmarkUtil {
         return TEMP_DIRECTORY + "/" + prefix + "-" + UUID.randomUUID() + ".log";
     }
 
-    public static void deleteTempDirectory() throws Exception {
-        final Path directory = Paths.get(TEMP_DIRECTORY);
+    public static void deleteTempDirectory() {
+        try {
+            final Path directory = Paths.get(TEMP_DIRECTORY);
 
-        if (Files.exists(directory)) {
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                    Files.deleteIfExists(file);
-                    return FileVisitResult.CONTINUE;
-                }
+            if (Files.exists(directory)) {
+                final SimpleFileVisitor<Path> cleaner = new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                        Files.deleteIfExists(file);
+                        return FileVisitResult.CONTINUE;
+                    }
 
-                @Override
-                public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
-                    Files.deleteIfExists(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+                    @Override
+                    public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
+                        Files.deleteIfExists(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                };
+
+                Files.walkFileTree(directory, cleaner);
+            }
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
