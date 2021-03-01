@@ -23,8 +23,4 @@ public final class JulBridge {
         return manager instanceof JulBridgeManager;
     }
 
-    @Deprecated
-    public static void uninstall() {
-    }
-
 }

@@ -158,21 +158,6 @@ public final class Util {
     }
 
     /**
-     * Makes the platform dependent short for the specified byte order.
-     *
-     * @param b1        1 of 1|0.
-     * @param b0        0 of 1|0.
-     * @param byteOrder to make for.
-     * @return the short value.
-     */
-    @Deprecated
-    public static short makeShort(final int b1, final int b0, final ByteOrder byteOrder) {
-        return (byteOrder == ByteOrder.LITTLE_ENDIAN) ?
-                (short) ((b0 << 8) | (b1)) :
-                (short) ((b1 << 8) | (b0));
-    }
-
-    /**
      * Makes the platform dependent int for the native byte order.
      *
      * @param b3 3 of 3|2|1|0.

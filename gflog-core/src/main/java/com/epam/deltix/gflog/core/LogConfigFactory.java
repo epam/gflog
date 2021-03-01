@@ -45,8 +45,6 @@ public final class LogConfigFactory {
     public static final String CONFIG = PropertyUtil.getString("gflog.config", null);
     public static final String CONFIG_SCHEMA = PropertyUtil.getString("gflog.config.schema", "gflog.xsd");
 
-    @Deprecated
-    public static final boolean CONFIG_VALIDATE = true;
     public static final boolean CONFIG_CLASSPATH_SEARCH = PropertyUtil.getBoolean("gflog.config.classpath.search", true);
     private static final String[] CONFIG_CLASSPATH_FILES = {"gflog-test.xml", "gflog.xml"};
 
