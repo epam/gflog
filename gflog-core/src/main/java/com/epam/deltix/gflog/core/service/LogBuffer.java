@@ -83,18 +83,20 @@ final class LogBuffer {
     }
 
     public int claim(final int length) {
-        final int aligned = Util.align(length, LogRecordEncoder.ALIGNMENT);
-
+        final int required = Util.align(length, LogRecordEncoder.ALIGNMENT);
         long head = UNSAFE.getLongVolatile(null, headCacheAddress);
-        long tail;
-        long tailNext;
 
         int offset;
         int padding;
 
-        do {
-            tail = UNSAFE.getLongVolatile(null, tailAddress);
-            tailNext = tail + aligned;
+        while (true) {
+            final long tail = UNSAFE.getLongVolatile(null, tailAddress);
+            offset = (int) tail & mask;
+
+            final int continuous = capacity - offset;
+
+            padding = (required > continuous) ? continuous : 0;
+            final long tailNext = tail + required + padding;
 
             if (tailNext - head > capacity) {
                 head = UNSAFE.getLongVolatile(null, headAddress);
@@ -106,28 +108,10 @@ final class LogBuffer {
                 UNSAFE.putOrderedLong(null, headCacheAddress, head);
             }
 
-            padding = 0;
-            offset = (int) tail & mask;
-
-            final int continuous = capacity - offset;
-
-            if (aligned > continuous) {
-                tailNext += continuous;
-
-                if (tailNext - head > capacity) {
-                    head = UNSAFE.getLongVolatile(null, headAddress);
-
-                    if (tailNext - head > capacity) {
-                        return INSUFFICIENT_SPACE;
-                    }
-
-                    UNSAFE.putOrderedLong(null, headCacheAddress, head);
-                }
-
-                padding = continuous;
+            if (UNSAFE.compareAndSwapLong(null, tailAddress, tail, tailNext)) {
+                break;
             }
-
-        } while (!UNSAFE.compareAndSwapLong(null, tailAddress, tail, tailNext));
+        }
 
         if (padding != 0) {
             UNSAFE.putOrderedInt(null, dataAddress + offset, -padding);
