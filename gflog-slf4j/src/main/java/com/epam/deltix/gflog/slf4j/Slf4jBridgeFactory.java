@@ -13,14 +13,14 @@ public final class Slf4jBridgeFactory implements ILoggerFactory {
     private final ConcurrentHashMap<String, Slf4jBridge> loggers = new ConcurrentHashMap<>();
 
     @Override
-    public Logger getLogger(String name) {
+    public Logger getLogger(final String name) {
         Slf4jBridge logger = loggers.get(name);
 
         if (logger == null) {
-            Log log = LogFactory.getLog(toLogName(name));
+            final Log log = LogFactory.getLog(toLogName(name));
 
             logger = new Slf4jBridge(name, log);
-            Slf4jBridge existed = loggers.putIfAbsent(name, logger);
+            final Slf4jBridge existed = loggers.putIfAbsent(name, logger);
 
             if (existed != null) {
                 logger = existed;
@@ -30,7 +30,7 @@ public final class Slf4jBridgeFactory implements ILoggerFactory {
         return logger;
     }
 
-    private static String toLogName(String loggerName) {
+    private static String toLogName(final String loggerName) {
         return Logger.ROOT_LOGGER_NAME.equals(loggerName) ? "" : loggerName;
     }
 

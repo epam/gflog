@@ -75,6 +75,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
             case WORKING:
                 value = 0;
                 state = SPINNING;
+                // fallthrough
 
             case SPINNING:
                 if (++value <= maxSpins) {
@@ -84,6 +85,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
 
                 value = 0;
                 state = YIELDING;
+                // fallthrough
 
             case YIELDING:
                 if (++value <= maxYields) {
@@ -93,6 +95,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
 
                 value = minParkPeriodNs;
                 state = PARKING;
+                // fallthrough
 
             case PARKING:
                 LockSupport.parkNanos(value);

@@ -20,7 +20,8 @@ public class FormattingBenchmark {
 
     private static final byte[] BYTE_ARRAY = new byte[1024];
 
-    private static final String STRING = "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+    private static final String LINE_50 = "12345678901234567890123456789012345678901234567890";
+    private static final String STRING = LINE_50 + LINE_50 + LINE_50;
     public static int offsett = 42;
 
     @Benchmark

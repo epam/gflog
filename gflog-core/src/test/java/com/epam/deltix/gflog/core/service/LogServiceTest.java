@@ -129,9 +129,8 @@ public abstract class LogServiceTest {
     private String[] split(final String message) {
         final ArrayList<String> parts = new ArrayList<>(3);
 
-
         for (int i = 0; ; ) {
-            int j = message.indexOf(". ", i);
+            final int j = message.indexOf(". ", i);
 
             if (j < 0) {
                 parts.add(message.substring(i));
@@ -150,7 +149,7 @@ public abstract class LogServiceTest {
         private final String name;
         private final long[] appenderMask;
 
-        public Log(final String name, final LogInfo info) {
+        Log(final String name, final LogInfo info) {
             this.name = name;
             this.appenderMask = info.getAppenderMask();
         }
@@ -162,7 +161,7 @@ public abstract class LogServiceTest {
         private int messages;
         private volatile boolean active = true;
 
-        public Producer(final int producer) {
+        Producer(final int producer) {
             super("Producer #" + producer);
 
             this.producer = producer;
@@ -185,7 +184,7 @@ public abstract class LogServiceTest {
 
     private class VerifyingAppender extends Appender {
 
-        public VerifyingAppender() {
+        VerifyingAppender() {
             super("verifier", LogLevel.INFO);
         }
 

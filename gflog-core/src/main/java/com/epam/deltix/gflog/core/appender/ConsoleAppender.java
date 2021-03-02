@@ -58,7 +58,7 @@ public class ConsoleAppender extends NioAppender<WritableByteChannel> {
         return channel;
     }
 
-    private static FileChannel unwrap(OutputStream stream) throws Exception {
+    private static FileChannel unwrap(final OutputStream stream) throws Exception {
         final Field field = FilterOutputStream.class.getDeclaredField("out");
         final long fieldOffset = Util.UNSAFE.objectFieldOffset(field);
 
@@ -66,12 +66,14 @@ public class ConsoleAppender extends NioAppender<WritableByteChannel> {
             throw new AssertionError("FilterOutputStream.out type is not OutputStream");
         }
 
-        while (stream instanceof FilterOutputStream) {
-            stream = (OutputStream) Util.UNSAFE.getObject(stream, fieldOffset);
+        OutputStream wrapper = stream;
+
+        while (wrapper instanceof FilterOutputStream) {
+            wrapper = (OutputStream) Util.UNSAFE.getObject(wrapper, fieldOffset);
         }
 
-        if (stream instanceof FileOutputStream) {
-            return ((FileOutputStream) stream).getChannel();
+        if (wrapper instanceof FileOutputStream) {
+            return ((FileOutputStream) wrapper).getChannel();
         }
 
         return null;

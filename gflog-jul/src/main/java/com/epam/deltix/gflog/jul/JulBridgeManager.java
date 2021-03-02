@@ -21,13 +21,13 @@ public final class JulBridgeManager extends java.util.logging.LogManager {
     }
 
     @Override
-    public Logger getLogger(String name) {
-        name = (name == null) ? "" : name;
-        JulBridgeLogger bridge = loggers.get(name);
+    public Logger getLogger(final String name) {
+        final String log = (name == null) ? "" : name;
+        JulBridgeLogger bridge = loggers.get(log);
 
         if (bridge == null) {
-            bridge = new JulBridgeLogger(name);
-            final JulBridgeLogger existed = loggers.putIfAbsent(name, bridge);
+            bridge = new JulBridgeLogger(log);
+            final JulBridgeLogger existed = loggers.putIfAbsent(log, bridge);
 
             if (existed != null) {
                 bridge = existed;

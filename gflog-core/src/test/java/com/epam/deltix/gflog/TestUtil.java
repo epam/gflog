@@ -25,7 +25,7 @@ public class TestUtil {
         final int exponent = randomInt(-351, 351);
 
         if (exponent == -351) {
-            return Decimal64Util.NaN;
+            return Decimal64Util.NAN;
         }
 
         final String value = new BigDecimal(significand).movePointRight(exponent).toPlainString();
@@ -34,7 +34,7 @@ public class TestUtil {
 
 
     public static long randomTimestamp() {
-        long timestamp = random().nextLong(-1000, 3153600000000L);
+        final long timestamp = random().nextLong(-1000, 3153600000000L);
         return (timestamp < 0) ? Long.MIN_VALUE : timestamp;
     }
 
@@ -53,7 +53,7 @@ public class TestUtil {
         return value;
     }
 
-    public static int randomULongWithLength(int length) {
+    public static int randomULongWithLength(final int length) {
         return randomUIntWithLength(length, length);
     }
 
@@ -61,16 +61,16 @@ public class TestUtil {
         return random().nextLong();
     }
 
-    public static long randomLong(long min, long max) {
+    public static long randomLong(final long min, final long max) {
         return random().nextLong(min, max + 1);
     }
 
-    public static long randomLongWithLength(int beginLength, int endLength) {
+    public static long randomLongWithLength(final int beginLength, final int endLength) {
         final long value = randomULongWithLength(beginLength, endLength);
         return randomBoolean() ? -value : value;
     }
 
-    public static long randomULongWithLength(int beginLength, int endLength) {
+    public static long randomULongWithLength(final int beginLength, final int endLength) {
         final ThreadLocalRandom random = random();
         final int index = random.nextInt(beginLength, endLength + 1) - 1;
         final long low = LONG_RANGE[index];
@@ -83,7 +83,7 @@ public class TestUtil {
         return random().nextDouble(Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
-    public static double randomDouble(double lowInclusive, double highExclusive) {
+    public static double randomDouble(final double lowInclusive, final double highExclusive) {
         return random().nextDouble(lowInclusive, highExclusive);
     }
 
@@ -91,21 +91,21 @@ public class TestUtil {
         return random().nextInt();
     }
 
-    public static int randomIntWithLength(int length) {
+    public static int randomIntWithLength(final int length) {
         final int value = randomUIntWithLength(length);
         return randomBoolean() ? -value : value;
     }
 
-    public static int randomIntWithLength(int beginLength, int endLength) {
+    public static int randomIntWithLength(final int beginLength, final int endLength) {
         final int value = randomUIntWithLength(beginLength, endLength);
         return randomBoolean() ? -value : value;
     }
 
-    public static int randomUIntWithLength(int length) {
+    public static int randomUIntWithLength(final int length) {
         return randomUIntWithLength(length, length);
     }
 
-    public static int randomUIntWithLength(int beginLength, int endLength) {
+    public static int randomUIntWithLength(final int beginLength, final int endLength) {
         final ThreadLocalRandom random = random();
         final int index = random.nextInt(beginLength, endLength + 1) - 1;
         final int low = INT_RANGE[index];
@@ -114,38 +114,16 @@ public class TestUtil {
         return random.nextInt(low, high);
     }
 
-    public static int randomInt(int min, int max) {
+    public static int randomInt(final int min, final int max) {
         return random().nextInt(min, max + 1);
-    }
-
-    public static float randomFloat() {
-        return Float.intBitsToFloat(randomInt());
-    }
-
-    public static short randomShort() {
-        return (short) randomInt();
-    }
-
-    public static byte randomByte() {
-        return (byte) randomInt();
     }
 
     public static boolean randomBoolean() {
         return randomInt() < 0;
     }
 
-    public static char randomChar() {
-        return (char) randomInt();
-    }
-
     public static char randomChar(final int min, final int max) {
         return (char) randomInt(min, max);
-    }
-
-    public static <E extends Enum<E>> E randomEnumValue(Class<E> clazz) {
-        E[] constants = clazz.getEnumConstants();
-        int index = random().nextInt(-1, constants.length);
-        return index < 0 ? null : constants[index];
     }
 
     public static String randomAsciiString(final int fromLength, final int toLength) {
@@ -221,11 +199,11 @@ public class TestUtil {
             return "null";
         }
 
-        int length = (int) (value >>> 60);
-        byte[] array = new byte[length];
+        final int length = (int) (value >>> 60);
+        final byte[] array = new byte[length];
 
         for (int i = 0, shift = 54; i < length; i++, shift -= 6) {
-            byte c = (byte) (((value >>> shift) & 0x3F) + 0x20);
+            final byte c = (byte) (((value >>> shift) & 0x3F) + 0x20);
             array[i] = c;
         }
 
@@ -233,12 +211,15 @@ public class TestUtil {
     }
 
     public static long parseAlphanumeric(final String text) {
-        if (text == null)
+        if (text == null) {
             return Long.MIN_VALUE;
+        }
 
-        int length = text.length();
-        if (length > 10)
+        final int length = text.length();
+
+        if (length > 10) {
             throw new IllegalArgumentException("Text \"" + text + "\" exceeds max length of alphanumeric text");
+        }
 
         long value = (long) length << 60L;
 

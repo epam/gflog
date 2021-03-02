@@ -839,7 +839,8 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
 
     private void warnNotCommitted() {
         if (LogDebug.isWarnEnabled()) {
-            final IllegalStateException e = new IllegalStateException("log entry was not committed. Message: " + entry.substring(offset, entry.length()));
+            final String message = entry.substring(offset, entry.length());
+            final IllegalStateException e = new IllegalStateException("log entry was not committed. Message: " + message);
             LogDebug.warn(e);
         }
     }

@@ -185,12 +185,12 @@ public final class Util {
      * @param b0 0 of 7|6|5|4|3|2|1|0.
      * @return the long value.
      */
-    public static long makeLong(final int b7, final int b6, final int b5, final int b4,
-                                final int b3, final int b2, final int b1, final int b0) {
+    public static long makeLong(final long b7, final long b6, final long b5, final long b4,
+                                final long b3, final long b2, final long b1, final long b0) {
 
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
-                (((long) b0 << 56) | ((long) b1 << 48) | ((long) b2 << 40) | ((long) b3 << 32) | ((long) b4 << 24) | ((long) b5 << 16) | ((long) b6 << 8) | b7) :
-                (((long) b7 << 56) | ((long) b6 << 48) | ((long) b5 << 40) | ((long) b4 << 32) | ((long) b3 << 24) | ((long) b2 << 16) | ((long) b1 << 8) | b0);
+                ((b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | b7) :
+                ((b7 << 56) | (b6 << 48) | (b5 << 40) | (b4 << 32) | (b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
     }
 
     public static int codePointAt(final CharSequence sequence, final int index, final int end) {

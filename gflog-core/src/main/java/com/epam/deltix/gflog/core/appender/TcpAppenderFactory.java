@@ -1,23 +1,22 @@
 package com.epam.deltix.gflog.core.appender;
 
-import com.epam.deltix.gflog.core.util.PropertyUtil;
-
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
+import static com.epam.deltix.gflog.core.util.PropertyUtil.*;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
 public class TcpAppenderFactory extends NioAppenderFactory {
 
-    protected static final long CONNECT_TIMEOUT = PropertyUtil.getDuration("gflog.tcp.appender.connect.timeout", TimeUnit.MILLISECONDS, 5 * 1000);
-    protected static final long RECONNECT_INITIAL_PERIOD = PropertyUtil.getDuration("gflog.tcp.appender.reconnect.initial.period", TimeUnit.MILLISECONDS, 5 * 1000);
-    protected static final long RECONNECT_MAX_PERIOD = PropertyUtil.getDuration("gflog.tcp.appender.reconnect.max.period", TimeUnit.MILLISECONDS, 10 * 60 * 1000);
-    protected static final long SEND_TIMEOUT = PropertyUtil.getDuration("gflog.tcp.appender.send.timeout", TimeUnit.MILLISECONDS, 5 * 1000);
+    protected static final long CONNECT_TIMEOUT = getDuration("gflog.tcp.appender.connect.timeout", MILLISECONDS, 5 * 1000);
+    protected static final long RECONNECT_INITIAL_PERIOD = getDuration("gflog.tcp.appender.reconnect.initial.period", MILLISECONDS, 5 * 1000);
+    protected static final long RECONNECT_MAX_PERIOD = getDuration("gflog.tcp.appender.reconnect.max.period", MILLISECONDS, 10 * 60 * 1000);
+    protected static final long SEND_TIMEOUT = getDuration("gflog.tcp.appender.send.timeout", MILLISECONDS, 5 * 1000);
 
-    protected static final int SOCKET_SEND_BUFFER_CAPACITY = PropertyUtil.getMemory("gflog.tcp.appender.socket.send.buffer.capacity", 2 * 1024 * 1024);
-    protected static final int SOCKET_RECEIVE_BUFFER_CAPACITY = PropertyUtil.getMemory("gflog.tcp.appender.socket.receive.buffer.capacity", 0);
-    protected static final boolean SOCKET_TCP_NO_DELAY = PropertyUtil.getBoolean("gflog.tcp.appender.socket.tcp.no.delay", false);
+    protected static final int SOCKET_SEND_BUFFER_CAPACITY = getMemory("gflog.tcp.appender.socket.send.buffer.capacity", 2 * 1024 * 1024);
+    protected static final int SOCKET_RECEIVE_BUFFER_CAPACITY = getMemory("gflog.tcp.appender.socket.receive.buffer.capacity", 0);
+    protected static final boolean SOCKET_TCP_NO_DELAY = getBoolean("gflog.tcp.appender.socket.tcp.no.delay", false);
 
     protected String host;
     protected int port = -1;

@@ -13,7 +13,7 @@ import static com.epam.deltix.gflog.benchmark.gflog.GflogBenchmarkUtil.prepare;
 
 public class GflogMemoryBenchmark {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
         prepare("noop", "UTF-8");
 
         try {
@@ -62,14 +62,27 @@ public class GflogMemoryBenchmark {
     private static int maxSize(final ThreadLocalRandom random) {
         final int percentile = random.nextInt(0, 100);
 
-        if (percentile < 50) return 100;
-        if (percentile < 70) return 200;
-        if (percentile < 80) return 300;
-        if (percentile < 90) return 400;
-        if (percentile < 99) return 500;
-        if (percentile < 100) return 1000;
+        if (percentile < 50) {
+            return 100;
+        }
 
-        return -1;
+        if (percentile < 70) {
+            return 200;
+        }
+
+        if (percentile < 80) {
+            return 300;
+        }
+
+        if (percentile < 90) {
+            return 400;
+        }
+
+        if (percentile < 99) {
+            return 500;
+        }
+
+        return 1000;
     }
 
     private static char generateChar() {

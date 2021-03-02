@@ -55,7 +55,8 @@ public final class LatencyBenchmarkRunner {
     }
 
     private static void run(final String name, final Consumer<BenchmarkState> command) throws Exception {
-        System.out.printf("Benchmark: %s. Warmup: %s s. Duration: %s s. Interval: %s ns. Threads: %s. Batch: %s. Catchup: %s. Affinity (base,step): %s,%s.%n",
+        System.out.printf("Benchmark: %s. Warmup: %s s. Duration: %s s. Interval: %s ns. " +
+                        "Threads: %s. Batch: %s. Catchup: %s. Affinity (base,step): %s,%s.%n",
                 name, WARMUP_S, DURATION_S, INTERVAL_NS, THREADS, BATCH, CATCHUP, AFFINITY_BASE, AFFINITY_STEP);
 
         final AtomicBoolean active = new AtomicBoolean(true);
@@ -117,12 +118,12 @@ public final class LatencyBenchmarkRunner {
         private final int batch;
         private final int affinity;
 
-        public ThreadRunner(final Consumer<BenchmarkState> command,
-                            final AtomicBoolean active,
-                            final AtomicBoolean measure,
-                            final long interval,
-                            final int batch,
-                            final int affinity) {
+        ThreadRunner(final Consumer<BenchmarkState> command,
+                     final AtomicBoolean active,
+                     final AtomicBoolean measure,
+                     final long interval,
+                     final int batch,
+                     final int affinity) {
             super(THREAD);
 
             this.command = command;

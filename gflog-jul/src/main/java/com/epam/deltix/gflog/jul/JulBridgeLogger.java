@@ -152,7 +152,7 @@ final class JulBridgeLogger extends Logger {
         }
     }
 
-    private static LogLevel getLogLevel(Level level) {
+    private static LogLevel getLogLevel(final Level level) {
         final int intLevel = level.intValue();
         if (intLevel < Level.FINER.intValue()) {
             return LogLevel.TRACE;
@@ -240,7 +240,7 @@ final class JulBridgeLogger extends Logger {
         entry.append(message, appendFrom, message.length());
     }
 
-    private static int getIndex(String message, int start, int end) {
+    private static int getIndex(final String message, int start, int end) {
         int index = 0;
 
         while (start < end) {

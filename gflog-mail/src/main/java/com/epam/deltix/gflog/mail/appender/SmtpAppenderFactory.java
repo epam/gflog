@@ -57,7 +57,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
 
     @Override
     protected Appender createAppender() {
-        SmtpSettings settings = new SmtpSettings(to, from, subject, maxSubjectLength, host, port,
+        final SmtpSettings settings = new SmtpSettings(to, from, subject, maxSubjectLength, host, port,
                 secure, username, password, timeout, debug);
 
         return new SmtpAppender(name, level, bufferCapacity, flushCapacity, layout, maxEntries, pushLevel, period, maxEmails, settings);
@@ -67,7 +67,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return pushLevel;
     }
 
-    public void setPushLevel(LogLevel pushLevel) {
+    public void setPushLevel(final LogLevel pushLevel) {
         this.pushLevel = pushLevel;
     }
 
@@ -75,7 +75,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return period;
     }
 
-    public void setPeriod(int period) {
+    public void setPeriod(final int period) {
         this.period = period;
     }
 
@@ -83,7 +83,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return maxEntries;
     }
 
-    public void setMaxEntries(int maxEntries) {
+    public void setMaxEntries(final int maxEntries) {
         this.maxEntries = maxEntries;
     }
 
@@ -91,7 +91,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return maxEmails;
     }
 
-    public void setMaxEmails(int maxEmails) {
+    public void setMaxEmails(final int maxEmails) {
         this.maxEmails = maxEmails;
     }
 
@@ -99,7 +99,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return to;
     }
 
-    public void setTo(String to) {
+    public void setTo(final String to) {
         this.to = to;
     }
 
@@ -107,7 +107,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return from;
     }
 
-    public void setFrom(String from) {
+    public void setFrom(final String from) {
         this.from = from;
     }
 
@@ -115,7 +115,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return subject;
     }
 
-    public void setSubject(String subject) {
+    public void setSubject(final String subject) {
         this.subject = subject;
     }
 
@@ -123,7 +123,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return maxSubjectLength;
     }
 
-    public void setMaxSubjectLength(int maxSubjectLength) {
+    public void setMaxSubjectLength(final int maxSubjectLength) {
         this.maxSubjectLength = maxSubjectLength;
     }
 
@@ -131,7 +131,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return host;
     }
 
-    public void setHost(String host) {
+    public void setHost(final String host) {
         this.host = host;
     }
 
@@ -139,7 +139,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(final int port) {
         this.port = port;
     }
 
@@ -147,7 +147,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return secure;
     }
 
-    public void setSecure(String secure) {
+    public void setSecure(final String secure) {
         this.secure = secure;
     }
 
@@ -155,7 +155,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(final String username) {
         this.username = username;
     }
 
@@ -163,7 +163,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(final String password) {
         this.password = password;
     }
 
@@ -171,7 +171,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return timeout;
     }
 
-    public void setTimeout(int timeout) {
+    public void setTimeout(final int timeout) {
         this.timeout = timeout;
     }
 
@@ -179,7 +179,7 @@ public final class SmtpAppenderFactory extends NioAppenderFactory {
         return debug;
     }
 
-    public void setDebug(boolean debug) {
+    public void setDebug(final boolean debug) {
         this.debug = debug;
     }
 

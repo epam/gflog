@@ -9,7 +9,7 @@ public final class JclBridge implements Log {
 
     private final com.epam.deltix.gflog.api.Log log;
 
-    public JclBridge(String name) {
+    public JclBridge(final String name) {
         this.log = LogFactory.getLog(name);
     }
 
@@ -19,14 +19,14 @@ public final class JclBridge implements Log {
     }
 
     @Override
-    public void trace(Object object) {
+    public void trace(final Object object) {
         if (isTraceEnabled()) {
             log(object, log.trace());
         }
     }
 
     @Override
-    public void trace(Object object, Throwable exception) {
+    public void trace(final Object object, final Throwable exception) {
         if (isTraceEnabled()) {
             log(object, exception, log.trace());
         }
@@ -38,14 +38,14 @@ public final class JclBridge implements Log {
     }
 
     @Override
-    public void debug(Object object) {
+    public void debug(final Object object) {
         if (isDebugEnabled()) {
             log(object, log.debug());
         }
     }
 
     @Override
-    public void debug(Object object, Throwable exception) {
+    public void debug(final Object object, final Throwable exception) {
         if (isDebugEnabled()) {
             log(object, exception, log.debug());
         }
@@ -57,14 +57,14 @@ public final class JclBridge implements Log {
     }
 
     @Override
-    public void info(Object object) {
+    public void info(final Object object) {
         if (isInfoEnabled()) {
             log(object, log.info());
         }
     }
 
     @Override
-    public void info(Object object, Throwable exception) {
+    public void info(final Object object, final Throwable exception) {
         if (isInfoEnabled()) {
             log(object, exception, log.info());
         }
@@ -76,14 +76,14 @@ public final class JclBridge implements Log {
     }
 
     @Override
-    public void warn(Object object) {
+    public void warn(final Object object) {
         if (isWarnEnabled()) {
             log(object, log.warn());
         }
     }
 
     @Override
-    public void warn(Object object, Throwable exception) {
+    public void warn(final Object object, final Throwable exception) {
         if (isWarnEnabled()) {
             log(object, exception, log.warn());
         }
@@ -95,14 +95,14 @@ public final class JclBridge implements Log {
     }
 
     @Override
-    public void error(Object object) {
+    public void error(final Object object) {
         if (isErrorEnabled()) {
             log(object, log.error());
         }
     }
 
     @Override
-    public void error(Object object, Throwable exception) {
+    public void error(final Object object, final Throwable exception) {
         if (isErrorEnabled()) {
             log(object, exception, log.error());
         }
@@ -114,24 +114,24 @@ public final class JclBridge implements Log {
     }
 
     @Override
-    public void fatal(Object object) {
+    public void fatal(final Object object) {
         if (isFatalEnabled()) {
             log(object, log.fatal());
         }
     }
 
     @Override
-    public void fatal(Object object, Throwable exception) {
+    public void fatal(final Object object, final Throwable exception) {
         if (isFatalEnabled()) {
             log(object, exception, log.fatal());
         }
     }
 
-    private static void log(Object object, LogEntry entry) {
+    private static void log(final Object object, final LogEntry entry) {
         entry.appendLast(object);
     }
 
-    private static void log(Object object, Throwable exception, LogEntry entry) {
+    private static void log(final Object object, final Throwable exception, final LogEntry entry) {
         entry.append(object).appendLast(exception);
     }
 

@@ -18,7 +18,7 @@ public class GelfAppenderSample {
         launchServer();
 
         LogConfigurator.configure("classpath:gelf-appender.xml");
-        Log log = LogFactory.getLog(ConfigSample.class);
+        final Log log = LogFactory.getLog(ConfigSample.class);
 
         for (int i = 0; i < 100000; i++) {
             log.info("Hey there: %s!").with(i);

@@ -7,165 +7,80 @@ import java.text.DateFormatSymbols;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/**
- * <p>FastDateFormat is a fast char buffer implementation similar to
- * {@link java.text.SimpleDateFormat}.</p>
- * <p>
- * <p>Only formatting is supported, but all patterns are compatible with
- * SimpleDateFormat (except time zones - see below).</p>
- * <p>
- * <p>Java 1.4 introduced a new pattern letter, <code>'Z'</code>, to represent
- * time zones in RFC822 format (eg. <code>+0800</code> or <code>-1100</code>).
- * This pattern letter can be used here (on all JDK versions).</p>
- * <p>
- * <p>In addition, the pattern <code>'ZZ'</code> has been made to represent
- * ISO8601 full format time zones (eg. <code>+08:00</code> or <code>-11:00</code>).
- * This introduces a minor incompatibility with Java 1.4, but at a gain of
- * useful functionality.</p>
- *
- * @author TeaTrove project
- * @author Brian S O'Neill
- * @author Sean Schofield
- * @author Gary Gregory
- * @author Stephen Colebourne
- * @author Nikolay Metchev
- * @author Vladimir Dolzhenko
- * @version $Id: FastDateFormat.java 590552 2007-10-31 04:04:32Z bayard $
- * @since 2.0
- */
+
 final class FastDateFormat {
 
-    private static final Map<FastDateFormat, FastDateFormat> cInstanceCache = new HashMap<>(7);
-    private static final Map<Object, String> cTimeZoneDisplayCache = new HashMap<>(7);
+    private static final Map<FastDateFormat, FastDateFormat> INSTANCES = new HashMap<>(7);
+    private static final Map<Object, String> TIME_ZONES = new HashMap<>(7);
 
     private final Calendar mCalendar;
 
-    /**
-     * The pattern.
-     */
     private final String mPattern;
-    /**
-     * The time zone.
-     */
     private final TimeZone mTimeZone;
-    /**
-     * Whether the time zone overrides any on Calendars.
-     */
     private final boolean mTimeZoneForced;
-    /**
-     * The locale.
-     */
     private final Locale mLocale;
-    /**
-     * Whether the locale overrides the default.
-     */
     private final boolean mLocaleForced;
-    /**
-     * The parsed rules.
-     */
-    private transient Rule[] mRules;
-    /**
-     * The estimated maximum length.
-     */
-    private transient int mMaxLengthEstimate;
+    private Rule[] mRules;
+    private int mMaxLengthEstimate;
 
-    //-----------------------------------------------------------------------
+    public static synchronized FastDateFormat getInstance(final String pattern,
+                                                          final TimeZone timeZone,
+                                                          final Locale locale) {
+        final FastDateFormat emptyFormat = new FastDateFormat(pattern, timeZone, locale);
+        FastDateFormat format = INSTANCES.get(emptyFormat);
 
-    /**
-     * <p>Gets a formatter instance using the specified pattern, time zone
-     * and locale.</p>
-     *
-     * @param pattern  {@link java.text.SimpleDateFormat} compatible
-     *                 pattern
-     * @param timeZone optional time zone, overrides time zone of
-     *                 formatted date
-     * @param locale   optional locale, overrides system locale
-     * @return a pattern based date/time formatter
-     * @throws IllegalArgumentException if pattern is invalid
-     *                                  or <code>null</code>
-     */
-    public static synchronized FastDateFormat getInstance(String pattern, TimeZone timeZone, Locale locale) {
-        FastDateFormat emptyFormat = new FastDateFormat(pattern, timeZone, locale);
-        FastDateFormat format = cInstanceCache.get(emptyFormat);
         if (format == null) {
             format = emptyFormat;
             format.init();  // convert shell format into usable one
-            cInstanceCache.put(format, format);  // this is OK!
+            INSTANCES.put(format, format);  // this is OK!
         }
+
         return format;
     }
 
-    //-----------------------------------------------------------------------
-
-    /**
-     * <p>Gets the time zone display name, using a cache for performance.</p>
-     *
-     * @param tz       the zone to query
-     * @param daylight true if daylight savings
-     * @param style    the style to use <code>TimeZone.LONG</code>
-     *                 or <code>TimeZone.SHORT</code>
-     * @param locale   the locale to use
-     * @return the textual name of the time zone
-     */
-    static synchronized String getTimeZoneDisplay(TimeZone tz, boolean daylight, int style, Locale locale) {
+    private static synchronized String getTimeZoneDisplay(final TimeZone tz,
+                                                          final boolean daylight,
+                                                          final int style,
+                                                          final Locale locale) {
         // xxx :: GARBAGE !!!
-        Object key = new TimeZoneDisplayKey(tz, daylight, style, locale);
-        String value = cTimeZoneDisplayCache.get(key);
+        final Object key = new TimeZoneDisplayKey(tz, daylight, style, locale);
+        String value = TIME_ZONES.get(key);
+
         if (value == null) {
             // This is a very slow call, so cache the results.
             value = tz.getDisplayName(daylight, style, locale);
-            cTimeZoneDisplayCache.put(key, value);
+            TIME_ZONES.put(key, value);
         }
+
         return value;
     }
 
-    // Constructor
-    //-----------------------------------------------------------------------
+    private FastDateFormat(final String pattern,
+                           final TimeZone timeZone,
+                           final Locale locale) {
 
-    /**
-     * <p>Constructs a new FastDateFormat.</p>
-     *
-     * @param pattern  {@link java.text.SimpleDateFormat} compatible
-     *                 pattern
-     * @param timeZone time zone to use, <code>null</code> means use
-     *                 default for <code>Date</code> and value within for
-     *                 <code>Calendar</code>
-     * @param locale   locale, <code>null</code> means use system
-     *                 default
-     * @throws IllegalArgumentException if pattern is invalid or
-     *                                  <code>null</code>
-     */
-    protected FastDateFormat(String pattern, TimeZone timeZone, Locale locale) {
-        if (pattern == null) {
-            throw new IllegalArgumentException("The pattern must not be null");
-        }
+        Objects.requireNonNull(pattern);
+        Objects.requireNonNull(timeZone);
+        Objects.requireNonNull(locale);
+
         mPattern = pattern;
 
         // enforce time zone
         //mTimeZoneForced = (timeZone != null);
         mTimeZoneForced = true;
-        if (timeZone == null) {
-            timeZone = TimeZone.getDefault();
-        }
         mTimeZone = timeZone;
 
         // enforce locale
         //mLocaleForced = (locale != null);
         mLocaleForced = true;
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
         mLocale = locale;
 
         mCalendar = new GregorianCalendar();
         mCalendar.setTimeZone(mTimeZone);
     }
 
-    /**
-     * <p>Initializes the instance for first use.</p>
-     */
     protected void init() {
-        List<Rule> rulesList = parsePattern();
+        final List<Rule> rulesList = parsePattern();
         mRules = rulesList.toArray(new Rule[rulesList.size()]);
 
         int len = 0;
@@ -176,131 +91,42 @@ final class FastDateFormat {
         mMaxLengthEstimate = len;
     }
 
-    // Parse the pattern
-    //-----------------------------------------------------------------------
-
-    /**
-     * <p>Returns a list of Rules given a pattern.</p>
-     *
-     * @return a <code>List</code> of Rule objects
-     * @throws IllegalArgumentException if pattern is invalid
-     */
     protected List<Rule> parsePattern() {
-        DateFormatSymbols symbols = new DateFormatSymbols(mLocale);
-        List<Rule> rules = new ArrayList<Rule>();
+        final DateFormatSymbols symbols = new DateFormatSymbols(mLocale);
+        final List<Rule> rules = new ArrayList<>();
 
-        String[] ERAs = symbols.getEras();
-        String[] months = symbols.getMonths();
-        String[] shortMonths = symbols.getShortMonths();
-        String[] weekdays = symbols.getWeekdays();
-        String[] shortWeekdays = symbols.getShortWeekdays();
-        String[] AmPmStrings = symbols.getAmPmStrings();
+        final String[] eras = symbols.getEras();
+        final String[] months = symbols.getMonths();
+        final String[] shortMonths = symbols.getShortMonths();
+        final String[] weekdays = symbols.getWeekdays();
+        final String[] shortWeekdays = symbols.getShortWeekdays();
+        final String[] amPmStrings = symbols.getAmPmStrings();
 
-        int length = mPattern.length();
-        int[] indexRef = new int[1];
+        final int length = mPattern.length();
+        final int[] indexRef = new int[1];
 
         for (int i = 0; i < length; i++) {
             indexRef[0] = i;
-            String token = parseToken(mPattern, indexRef);
+            final String token = parseToken(mPattern, indexRef);
             i = indexRef[0];
 
-            int tokenLen = token.length();
+            final int tokenLen = token.length();
             if (tokenLen == 0) {
                 break;
             }
 
-            Rule rule;
-            char c = token.charAt(0);
-
-            switch (c) {
-                case 'G': // era designator (text)
-                    rule = new TextField(Calendar.ERA, ERAs);
-                    break;
-                case 'y': // year (number)
-                    if (tokenLen >= 4) {
-                        rule = selectNumberRule(Calendar.YEAR, tokenLen);
-                    } else {
-                        rule = TwoDigitYearField.INSTANCE;
-                    }
-                    break;
-                case 'M': // month in year (text and number)
-                    if (tokenLen >= 4) {
-                        rule = new TextField(Calendar.MONTH, months);
-                    } else if (tokenLen == 3) {
-                        rule = new TextField(Calendar.MONTH, shortMonths);
-                    } else if (tokenLen == 2) {
-                        rule = TwoDigitMonthField.INSTANCE;
-                    } else {
-                        rule = UnpaddedMonthField.INSTANCE;
-                    }
-                    break;
-                case 'd': // day in month (number)
-                    rule = selectNumberRule(Calendar.DAY_OF_MONTH, tokenLen);
-                    break;
-                case 'h': // hour in am/pm (number, 1..12)
-                    rule = new TwelveHourField(selectNumberRule(Calendar.HOUR, tokenLen));
-                    break;
-                case 'H': // hour in day (number, 0..23)
-                    rule = selectNumberRule(Calendar.HOUR_OF_DAY, tokenLen);
-                    break;
-                case 'm': // minute in hour (number)
-                    rule = selectNumberRule(Calendar.MINUTE, tokenLen);
-                    break;
-                case 's': // second in minute (number)
-                    rule = selectNumberRule(Calendar.SECOND, tokenLen);
-                    break;
-                case 'S': // millisecond (number)
-                    rule = selectSubSecondField(Calendar.MILLISECOND, tokenLen);
-                    break;
-                case 'E': // day in week (text)
-                    rule = new TextField(Calendar.DAY_OF_WEEK, tokenLen < 4 ? shortWeekdays : weekdays);
-                    break;
-                case 'D': // day in year (number)
-                    rule = selectNumberRule(Calendar.DAY_OF_YEAR, tokenLen);
-                    break;
-                case 'F': // day of week in month (number)
-                    rule = selectNumberRule(Calendar.DAY_OF_WEEK_IN_MONTH, tokenLen);
-                    break;
-                case 'w': // week in year (number)
-                    rule = selectNumberRule(Calendar.WEEK_OF_YEAR, tokenLen);
-                    break;
-                case 'W': // week in month (number)
-                    rule = selectNumberRule(Calendar.WEEK_OF_MONTH, tokenLen);
-                    break;
-                case 'a': // am/pm marker (text)
-                    rule = new TextField(Calendar.AM_PM, AmPmStrings);
-                    break;
-                case 'k': // hour in day (1..24)
-                    rule = new TwentyFourHourField(selectNumberRule(Calendar.HOUR_OF_DAY, tokenLen));
-                    break;
-                case 'K': // hour in am/pm (0..11)
-                    rule = selectNumberRule(Calendar.HOUR, tokenLen);
-                    break;
-                case 'z': // time zone (text)
-                    if (tokenLen >= 4) {
-                        rule = new TimeZoneNameRule(mTimeZone, mTimeZoneForced, mLocale, TimeZone.LONG);
-                    } else {
-                        rule = new TimeZoneNameRule(mTimeZone, mTimeZoneForced, mLocale, TimeZone.SHORT);
-                    }
-                    break;
-                case 'Z': // time zone (value)
-                    if (tokenLen == 1) {
-                        rule = TimeZoneNumberRule.INSTANCE_NO_COLON;
-                    } else {
-                        rule = TimeZoneNumberRule.INSTANCE_COLON;
-                    }
-                    break;
-                case '\'': // literal text
-                    String sub = token.substring(1);
-                    if (sub.length() == 1) {
-                        rule = new CharacterLiteral(sub.charAt(0));
-                    } else {
-                        rule = new StringLiteral(sub);
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Illegal pattern component: " + token);
-            }
+            final char c = token.charAt(0);
+            final Rule rule = createRule(
+                    c,
+                    token,
+                    tokenLen,
+                    eras,
+                    months,
+                    shortMonths,
+                    weekdays,
+                    shortWeekdays,
+                    amPmStrings
+            );
 
             rules.add(rule);
         }
@@ -308,29 +134,109 @@ final class FastDateFormat {
         return rules;
     }
 
-    /**
-     * <p>Performs the parsing of tokens.</p>
-     *
-     * @param pattern  the pattern
-     * @param indexRef index references
-     * @return parsed token
-     */
-    protected String parseToken(String pattern, int[] indexRef) {
-        StringBuilder buf = new StringBuilder();
+    private Rule createRule(final char c,
+                            final String token,
+                            final int tokenLen,
+                            final String[] eras,
+                            final String[] months,
+                            final String[] shortMonths,
+                            final String[] weekdays,
+                            final String[] shortWeekdays,
+                            final String[] amPmStrings) {
+        switch (c) {
+            case 'G': // era designator (text)
+                return new TextField(Calendar.ERA, eras);
+
+            case 'y': // year (number)
+                return tokenLen >= 4 ?
+                        selectNumberRule(Calendar.YEAR, tokenLen) :
+                        TwoDigitYearField.INSTANCE;
+
+            case 'M': // month in year (text and number)
+                return tokenLen >= 4 ? new TextField(Calendar.MONTH, months) :
+                        tokenLen == 3 ? new TextField(Calendar.MONTH, shortMonths) :
+                                tokenLen == 2 ? TwoDigitMonthField.INSTANCE :
+                                        UnpaddedMonthField.INSTANCE;
+
+            case 'd': // day in month (number)
+                return selectNumberRule(Calendar.DAY_OF_MONTH, tokenLen);
+
+            case 'h': // hour in am/pm (number, 1..12)
+                return new TwelveHourField(selectNumberRule(Calendar.HOUR, tokenLen));
+
+            case 'H': // hour in day (number, 0..23)
+                return selectNumberRule(Calendar.HOUR_OF_DAY, tokenLen);
+
+            case 'm': // minute in hour (number)
+                return selectNumberRule(Calendar.MINUTE, tokenLen);
+
+            case 's': // second in minute (number)
+                return selectNumberRule(Calendar.SECOND, tokenLen);
+
+            case 'S': // millisecond (number)
+                return selectSubSecondField(Calendar.MILLISECOND, tokenLen);
+
+            case 'E': // day in week (text)
+                return new TextField(Calendar.DAY_OF_WEEK, tokenLen < 4 ? shortWeekdays : weekdays);
+
+            case 'D': // day in year (number)
+                return selectNumberRule(Calendar.DAY_OF_YEAR, tokenLen);
+
+            case 'F': // day of week in month (number)
+                return selectNumberRule(Calendar.DAY_OF_WEEK_IN_MONTH, tokenLen);
+
+            case 'w': // week in year (number)
+                return selectNumberRule(Calendar.WEEK_OF_YEAR, tokenLen);
+
+            case 'W': // week in month (number)
+                return selectNumberRule(Calendar.WEEK_OF_MONTH, tokenLen);
+
+            case 'a': // am/pm marker (text)
+                return new TextField(Calendar.AM_PM, amPmStrings);
+
+            case 'k': // hour in day (1..24)
+                return new TwentyFourHourField(selectNumberRule(Calendar.HOUR_OF_DAY, tokenLen));
+
+            case 'K': // hour in am/pm (0..11)
+                return selectNumberRule(Calendar.HOUR, tokenLen);
+
+            case 'z': // time zone (text)
+                return (tokenLen >= 4) ?
+                        new TimeZoneNameRule(mTimeZone, mTimeZoneForced, mLocale, TimeZone.LONG) :
+                        new TimeZoneNameRule(mTimeZone, mTimeZoneForced, mLocale, TimeZone.SHORT);
+
+            case 'Z': // time zone (value)
+                return (tokenLen == 1) ?
+                        TimeZoneNumberRule.INSTANCE_NO_COLON :
+                        TimeZoneNumberRule.INSTANCE_COLON;
+
+            case '\'': // literal text
+                final String sub = token.substring(1);
+                return (sub.length() == 1) ?
+                        new CharacterLiteral(sub.charAt(0)) :
+                        new StringLiteral(sub);
+
+            default:
+                throw new IllegalArgumentException("Illegal pattern component: " + token);
+        }
+    }
+
+    private String parseToken(final String pattern, final int[] indexRef) {
+        final StringBuilder builder = new StringBuilder();
 
         int i = indexRef[0];
-        int length = pattern.length();
+        final int length = pattern.length();
 
         char c = pattern.charAt(i);
         if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z') {
             // Scan a run of the same character, which indicates a time
             // pattern.
-            buf.append(c);
+            builder.append(c);
 
             while (i + 1 < length) {
-                char peek = pattern.charAt(i + 1);
+                final char peek = pattern.charAt(i + 1);
                 if (peek == c) {
-                    buf.append(c);
+                    builder.append(c);
                     i++;
                 } else {
                     break;
@@ -338,7 +244,7 @@ final class FastDateFormat {
             }
         } else {
             // This will identify token as text.
-            buf.append('\'');
+            builder.append('\'');
 
             boolean inLiteral = false;
 
@@ -349,7 +255,7 @@ final class FastDateFormat {
                     if (i + 1 < length && pattern.charAt(i + 1) == '\'') {
                         // '' is treated as escaped '
                         i++;
-                        buf.append(c);
+                        builder.append(c);
                     } else {
                         inLiteral = !inLiteral;
                     }
@@ -358,23 +264,16 @@ final class FastDateFormat {
                     i--;
                     break;
                 } else {
-                    buf.append(c);
+                    builder.append(c);
                 }
             }
         }
 
         indexRef[0] = i;
-        return buf.toString();
+        return builder.toString();
     }
 
-    /**
-     * <p>Gets an appropriate rule for the padding required.</p>
-     *
-     * @param field   the field to get a rule for
-     * @param padding the padding required
-     * @return a new rule with the correct padding
-     */
-    protected NumberRule selectNumberRule(int field, int padding) {
+    protected NumberRule selectNumberRule(final int field, final int padding) {
         switch (padding) {
             case 1:
                 return new UnpaddedNumberField(field);
@@ -385,7 +284,7 @@ final class FastDateFormat {
         }
     }
 
-    protected NumberRule selectSubSecondField(int field, int padding) {
+    protected NumberRule selectSubSecondField(final int field, final int padding) {
         switch (padding) {
             case 6:
                 return new MicrosField();
@@ -396,60 +295,45 @@ final class FastDateFormat {
         }
     }
 
-    public ByteBuffer format(long millis, ByteBuffer buf) {
+    public ByteBuffer format(final long millis, final ByteBuffer buf) {
         mCalendar.setTimeInMillis(millis);
         return applyRules(mCalendar, buf);
     }
 
-    public ByteBuffer formatNanos(long nanos, ByteBuffer buf) {
-        long millis = TimeUnit.NANOSECONDS.toMillis(nanos);
+    public ByteBuffer formatNanos(final long nanos, final ByteBuffer buf) {
+        final long millis = TimeUnit.NANOSECONDS.toMillis(nanos);
         mCalendar.setTimeInMillis(millis);
         return applyRules(mCalendar, buf, nanos);
     }
 
-    protected ByteBuffer applyRules(Calendar calendar, ByteBuffer buffer) {
-        Rule[] rules = mRules;
-        int len = mRules.length;
+    protected ByteBuffer applyRules(final Calendar calendar, final ByteBuffer buffer) {
+        final Rule[] rules = mRules;
+        final int len = mRules.length;
         for (int i = 0; i < len; i++) {
             rules[i].appendTo(buffer, calendar);
         }
         return buffer;
     }
 
-    protected ByteBuffer applyRules(Calendar calendar, ByteBuffer buffer, long nanos) {
-        Rule[] rules = mRules;
-        int len = mRules.length;
+    protected ByteBuffer applyRules(final Calendar calendar, final ByteBuffer buffer, final long nanos) {
+        final Rule[] rules = mRules;
+        final int len = mRules.length;
         for (int i = 0; i < len; i++) {
             rules[i].appendTo(buffer, calendar, nanos);
         }
         return buffer;
     }
 
-    /**
-     * <p>Gets an estimate for the maximum string length that the
-     * formatter will produce.</p>
-     * <p>
-     * <p>The actual formatted length will almost always be less than or
-     * equal to this amount.</p>
-     *
-     * @return the maximum formatted length
-     */
     public int getMaxLengthEstimate() {
         return mMaxLengthEstimate;
     }
 
-    /**
-     * <p>Compares two objects for equality.</p>
-     *
-     * @param obj the object to compare to
-     * @return <code>true</code> if equal
-     */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (!(obj instanceof FastDateFormat)) {
             return false;
         }
-        FastDateFormat other = (FastDateFormat) obj;
+        final FastDateFormat other = (FastDateFormat) obj;
         return (mPattern == other.mPattern || mPattern.equals(other.mPattern)) &&
                 (mTimeZone == other.mTimeZone || mTimeZone.equals(other.mTimeZone)) &&
                 (mLocale == other.mLocale || mLocale.equals(other.mLocale)) &&
@@ -457,11 +341,6 @@ final class FastDateFormat {
                 (mLocaleForced == other.mLocaleForced);
     }
 
-    /**
-     * <p>Returns a hashcode compatible with equals.</p>
-     *
-     * @return a hashcode compatible with equals
-     */
     @Override
     public int hashCode() {
         int total = 0;
@@ -473,16 +352,8 @@ final class FastDateFormat {
         return total;
     }
 
-
-    /**
-     * <p>Inner class defining a rule.</p>
-     */
     private interface Rule {
-        /**
-         * Returns the estimated lentgh of the result.
-         *
-         * @return the estimated length
-         */
+
         int estimateLength();
 
         void appendTo(ByteBuffer buffer, Calendar calendar);
@@ -492,163 +363,103 @@ final class FastDateFormat {
         }
     }
 
-    /**
-     * <p>Inner class defining a numeric rule.</p>
-     */
     private interface NumberRule extends Rule {
-        /**
-         * Appends the specified value to the output buffer based on the rule implementation.
-         *
-         * @param buffer the output buffer
-         * @param value  the value to be appended
-         */
+
         void appendTo(ByteBuffer buffer, int value);
     }
 
-    /**
-     * <p>Inner class to output a constant single character.</p>
-     */
     private static class CharacterLiteral implements Rule {
+
         private final char mValue;
 
-        /**
-         * Constructs a new instance of <code>CharacterLiteral</code>
-         * to hold the specified value.
-         *
-         * @param value the character literal
-         */
         CharacterLiteral(char value) {
             mValue = value;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 1;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             BufferFormatter.append(buffer, mValue);
         }
+
     }
 
-    /**
-     * <p>Inner class to output a constant string.</p>
-     */
     private static class StringLiteral implements Rule {
+
         private final String mValue;
 
-        /**
-         * Constructs a new instance of <code>StringLiteral</code>
-         * to hold the specified value.
-         *
-         * @param value the string literal
-         */
-        StringLiteral(String value) {
+        StringLiteral(final String value) {
             mValue = value;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return mValue.length();
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             BufferFormatter.append(buffer, mValue);
         }
+
     }
 
-    /**
-     * <p>Inner class to output one of a set of values.</p>
-     */
     private static class TextField implements Rule {
+
         private final int mField;
         private final String[] mValues;
 
-        /**
-         * Constructs an instance of <code>TextField</code>
-         * with the specified field and values.
-         *
-         * @param field  the field
-         * @param values the field values
-         */
-        TextField(int field, String[] values) {
+        TextField(final int field, final String[] values) {
             mField = field;
             mValues = values;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             int max = 0;
+
             for (int i = mValues.length; --i >= 0; ) {
-                int len = mValues[i].length();
+                final int len = mValues[i].length();
+
                 if (len > max) {
                     max = len;
                 }
             }
+
             return max;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             BufferFormatter.append(buffer, mValues[calendar.get(mField)]);
         }
 
     }
 
-    /**
-     * <p>Inner class to output an unpadded number.</p>
-     */
     private static class UnpaddedNumberField implements NumberRule {
 
         private final int mField;
 
-        /**
-         * Constructs an instance of <code>UnpadedNumberField</code> with the specified field.
-         *
-         * @param field the field
-         */
-        UnpaddedNumberField(int field) {
+        UnpaddedNumberField(final int field) {
             mField = field;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 4;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             appendTo(buffer, calendar.get(mField));
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             if (value < 10) {
                 BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[value]);
             } else if (value < 100) {
@@ -658,58 +469,44 @@ final class FastDateFormat {
                 BufferFormatter.append(buffer, value);
             }
         }
+
     }
 
-    /**
-     * <p>Inner class to output an unpadded month.</p>
-     */
     private static class UnpaddedMonthField implements NumberRule {
-        static final UnpaddedMonthField INSTANCE = new UnpaddedMonthField();
 
-        /**
-         * Constructs an instance of <code>UnpaddedMonthField</code>.
-         */
+        private static final UnpaddedMonthField INSTANCE = new UnpaddedMonthField();
+
         UnpaddedMonthField() {
             super();
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 2;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             appendTo(buffer, calendar.get(Calendar.MONTH) + 1);
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             if (value >= 10) {
                 BufferFormatter.append(buffer, BufferFormatter.DIGIT_TENS[value]);
             }
 
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[value]);
         }
+
     }
 
-    /**
-     * <p>Inner class to output a padded number.</p>
-     */
     private static class PaddedNumberField implements NumberRule {
+
         private final int mField;
         private final int mSize;
 
-        /**
-         * Constructs an instance of <code>PaddedNumberField</code>.
-         *
-         * @param field the field
-         * @param size  size of the output field
-         */
-        PaddedNumberField(int field, int size) {
+        PaddedNumberField(final int field, final int size) {
             if (size < 3) {
                 // Should use UnpaddedNumberField or TwoDigitNumberField.
                 throw new IllegalArgumentException();
@@ -718,21 +515,18 @@ final class FastDateFormat {
             mSize = size;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 4;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             appendTo(buffer, calendar.get(mField));
         }
 
         @Override
-        public final void appendTo(ByteBuffer buffer, int value) {
+        public final void appendTo(final ByteBuffer buffer, final int value) {
             if (value < 100) {
                 for (int i = mSize; --i >= 2; ) {
                     BufferFormatter.append(buffer, '0');
@@ -748,6 +542,7 @@ final class FastDateFormat {
                 BufferFormatter.append(buffer, value);
             }
         }
+
     }
 
     private static class NanosField implements NumberRule {
@@ -762,18 +557,19 @@ final class FastDateFormat {
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             throw new UnsupportedOperationException("appendTo(buffer, calendar)");
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar, long nanos) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar, final long nanos) {
             appendTo(buffer, (int) (nanos % 1_000_000_000));
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
-            int size = Formatting.lengthOfUInt(value);
+        public void appendTo(final ByteBuffer buffer, final int value) {
+            final int size = Formatting.lengthOfUInt(value);
+
             for (int i = 0; i < LENGTH - size; i++) {
                 BufferFormatter.append(buffer, '0');
             }
@@ -795,19 +591,20 @@ final class FastDateFormat {
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             throw new UnsupportedOperationException("appendTo(buffer, calendar)");
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar, long nanos) {
-            int micros = (int) (nanos / 1_000 % 1_000_000);
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar, final long nanos) {
+            final int micros = (int) (nanos / 1_000 % 1_000_000);
             appendTo(buffer, micros);
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
-            int size = Formatting.lengthOfUInt(value);
+        public void appendTo(final ByteBuffer buffer, final int value) {
+            final int size = Formatting.lengthOfUInt(value);
+
             for (int i = 0; i < LENGTH - size; i++) {
                 BufferFormatter.append(buffer, '0');
             }
@@ -817,36 +614,26 @@ final class FastDateFormat {
 
     }
 
-    /**
-     * <p>Inner class to output a two digit number.</p>
-     */
     private static class TwoDigitNumberField implements NumberRule {
+
         private final int mField;
 
-        /**
-         * Constructs an instance of <code>TwoDigitNumberField</code> with the specified field.
-         *
-         * @param field the field
-         */
-        TwoDigitNumberField(int field) {
+        TwoDigitNumberField(final int field) {
             mField = field;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 2;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             appendTo(buffer, calendar.get(mField));
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             if (value < 100) {
                 BufferFormatter.append(buffer, BufferFormatter.DIGIT_TENS[value]);
                 BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[value]);
@@ -854,100 +641,72 @@ final class FastDateFormat {
                 BufferFormatter.append(buffer, value);
             }
         }
+
     }
 
-    /**
-     * <p>Inner class to output a two digit year.</p>
-     */
     private static class TwoDigitYearField implements NumberRule {
-        static final TwoDigitYearField INSTANCE = new TwoDigitYearField();
 
-        /**
-         * Constructs an instance of <code>TwoDigitYearField</code>.
-         */
-        TwoDigitYearField() {
-            super();
-        }
+        private static final TwoDigitYearField INSTANCE = new TwoDigitYearField();
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 2;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             appendTo(buffer, calendar.get(Calendar.YEAR) % 100);
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_TENS[value]);
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[value]);
         }
+
     }
 
-    /**
-     * <p>Inner class to output a two digit month.</p>
-     */
     private static class TwoDigitMonthField implements NumberRule {
-        static final TwoDigitMonthField INSTANCE = new TwoDigitMonthField();
 
-        /**
-         * Constructs an instance of <code>TwoDigitMonthField</code>.
-         */
+        private static final TwoDigitMonthField INSTANCE = new TwoDigitMonthField();
+
         TwoDigitMonthField() {
             super();
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 2;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             appendTo(buffer, calendar.get(Calendar.MONTH) + 1);
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_TENS[value]);
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[value]);
         }
+
     }
 
-    /**
-     * <p>Inner class to output the twelve hour field.</p>
-     */
     private static class TwelveHourField implements NumberRule {
+
         private final NumberRule mRule;
 
-        /**
-         * Constructs an instance of <code>TwelveHourField</code> with the specified
-         * <code>NumberRule</code>.
-         *
-         * @param rule the rule
-         */
-        TwelveHourField(NumberRule rule) {
+        TwelveHourField(final NumberRule rule) {
             mRule = rule;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return mRule.estimateLength();
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             int value = calendar.get(Calendar.HOUR);
             if (value == 0) {
                 value = calendar.getLeastMaximum(Calendar.HOUR) + 1;
@@ -956,37 +715,27 @@ final class FastDateFormat {
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             mRule.appendTo(buffer, value);
         }
+
     }
 
-    /**
-     * <p>Inner class to output the twenty four hour field.</p>
-     */
     private static class TwentyFourHourField implements NumberRule {
+
         private final NumberRule mRule;
 
-        /**
-         * Constructs an instance of <code>TwentyFourHourField</code> with the specified
-         * <code>NumberRule</code>.
-         *
-         * @param rule the rule
-         */
-        TwentyFourHourField(NumberRule rule) {
+        TwentyFourHourField(final NumberRule rule) {
             mRule = rule;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return mRule.estimateLength();
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             int value = calendar.get(Calendar.HOUR_OF_DAY);
             if (value == 0) {
                 value = calendar.getMaximum(Calendar.HOUR_OF_DAY) + 1;
@@ -995,15 +744,14 @@ final class FastDateFormat {
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, int value) {
+        public void appendTo(final ByteBuffer buffer, final int value) {
             mRule.appendTo(buffer, value);
         }
+
     }
 
-    /**
-     * <p>Inner class to output a time zone name.</p>
-     */
     private static class TimeZoneNameRule implements Rule {
+
         private final TimeZone mTimeZone;
         private final boolean mTimeZoneForced;
         private final Locale mLocale;
@@ -1011,15 +759,7 @@ final class FastDateFormat {
         private final String mStandard;
         private final String mDaylight;
 
-        /**
-         * Constructs an instance of <code>TimeZoneNameRule</code> with the specified properties.
-         *
-         * @param timeZone       the time zone
-         * @param timeZoneForced if <code>true</code> the time zone is forced into standard and daylight
-         * @param locale         the locale
-         * @param style          the style
-         */
-        TimeZoneNameRule(TimeZone timeZone, boolean timeZoneForced, Locale locale, int style) {
+        TimeZoneNameRule(final TimeZone timeZone, final boolean timeZoneForced, final Locale locale, final int style) {
             mTimeZone = timeZone;
             mTimeZoneForced = timeZoneForced;
             mLocale = locale;
@@ -1034,9 +774,6 @@ final class FastDateFormat {
             }
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             if (mTimeZoneForced) {
@@ -1049,7 +786,7 @@ final class FastDateFormat {
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             if (mTimeZoneForced) {
                 if (mTimeZone.useDaylightTime() && calendar.get(Calendar.DST_OFFSET) != 0) {
                     BufferFormatter.append(buffer, mDaylight);
@@ -1057,7 +794,7 @@ final class FastDateFormat {
                     BufferFormatter.append(buffer, mStandard);
                 }
             } else {
-                TimeZone timeZone = calendar.getTimeZone();
+                final TimeZone timeZone = calendar.getTimeZone();
                 if (timeZone.useDaylightTime() && calendar.get(Calendar.DST_OFFSET) != 0) {
                     BufferFormatter.append(buffer, getTimeZoneDisplay(timeZone, true, mStyle, mLocale));
                 } else {
@@ -1067,35 +804,24 @@ final class FastDateFormat {
         }
     }
 
-    /**
-     * <p>Inner class to output a time zone as a number <code>+/-HHMM</code>
-     * or <code>+/-HH:MM</code>.</p>
-     */
     private static class TimeZoneNumberRule implements Rule {
+
         static final TimeZoneNumberRule INSTANCE_COLON = new TimeZoneNumberRule(true);
         static final TimeZoneNumberRule INSTANCE_NO_COLON = new TimeZoneNumberRule(false);
 
         final boolean mColon;
 
-        /**
-         * Constructs an instance of <code>TimeZoneNumberRule</code> with the specified properties.
-         *
-         * @param colon add colon between HH and MM in the output if <code>true</code>
-         */
-        TimeZoneNumberRule(boolean colon) {
+        TimeZoneNumberRule(final boolean colon) {
             mColon = colon;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int estimateLength() {
             return 5;
         }
 
         @Override
-        public void appendTo(ByteBuffer buffer, Calendar calendar) {
+        public void appendTo(final ByteBuffer buffer, final Calendar calendar) {
             int offset = calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET);
 
             if (offset < 0) {
@@ -1105,7 +831,7 @@ final class FastDateFormat {
                 BufferFormatter.append(buffer, '+');
             }
 
-            int hours = offset / (60 * 60 * 1000);
+            final int hours = offset / (60 * 60 * 1000);
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_TENS[hours]);
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[hours]);
 
@@ -1113,32 +839,22 @@ final class FastDateFormat {
                 BufferFormatter.append(buffer, ':');
             }
 
-            int minutes = offset / (60 * 1000) - 60 * hours;
+            final int minutes = offset / (60 * 1000) - 60 * hours;
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_TENS[minutes]);
             BufferFormatter.append(buffer, BufferFormatter.DIGIT_ONES[minutes]);
         }
     }
 
-    // ----------------------------------------------------------------------
-
-    /**
-     * <p>Inner class that acts as a compound key for time zone names.</p>
-     */
     private static class TimeZoneDisplayKey {
+
         private final TimeZone mTimeZone;
         private final int mStyle;
         private final Locale mLocale;
 
-        /**
-         * Constructs an instance of <code>TimeZoneDisplayKey</code> with the specified properties.
-         *
-         * @param timeZone the time zone
-         * @param daylight adjust the style for daylight saving time if <code>true</code>
-         * @param style    the timezone style
-         * @param locale   the timezone locale
-         */
-        TimeZoneDisplayKey(TimeZone timeZone,
-                           boolean daylight, int style, Locale locale) {
+        TimeZoneDisplayKey(final TimeZone timeZone,
+                           final boolean daylight,
+                           int style,
+                           final Locale locale) {
             mTimeZone = timeZone;
             if (daylight) {
                 style |= 0x80000000;
@@ -1147,24 +863,18 @@ final class FastDateFormat {
             mLocale = locale;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int hashCode() {
             return mStyle * 31 + mLocale.hashCode();
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (this == obj) {
                 return true;
             }
             if (obj instanceof TimeZoneDisplayKey) {
-                TimeZoneDisplayKey other = (TimeZoneDisplayKey) obj;
+                final TimeZoneDisplayKey other = (TimeZoneDisplayKey) obj;
                 return
                         mTimeZone.equals(other.mTimeZone) &&
                                 mStyle == other.mStyle &&
@@ -1176,7 +886,7 @@ final class FastDateFormat {
 
     private static class BufferFormatter {
 
-        public final static char[] DIGIT_TENS = {
+        public static final char[] DIGIT_TENS = {
                 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
                 '1', '1', '1', '1', '1', '1', '1', '1', '1', '1',
                 '2', '2', '2', '2', '2', '2', '2', '2', '2', '2',
@@ -1189,7 +899,7 @@ final class FastDateFormat {
                 '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
         };
 
-        public final static char[] DIGIT_ONES = {
+        public static final char[] DIGIT_ONES = {
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -1202,10 +912,7 @@ final class FastDateFormat {
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         };
 
-        /**
-         * All possible chars for representing a number as a String
-         */
-        public final static char[] DIGITS = {
+        public static final char[] DIGITS = {
                 '0', '1', '2', '3', '4', '5',
                 '6', '7', '8', '9', 'a', 'b',
                 'c', 'd', 'e', 'f', 'g', 'h',
@@ -1214,11 +921,14 @@ final class FastDateFormat {
                 'u', 'v', 'w', 'x', 'y', 'z'
         };
 
-        public static void append(final ByteBuffer buffer, CharSequence s) {
+        public static void append(final ByteBuffer buffer, final CharSequence s) {
             append(buffer, s, 0, s != null ? s.length() : 0);
         }
 
-        public static void append(final ByteBuffer buffer, CharSequence s, int start, int end) {
+        public static void append(final ByteBuffer buffer,
+                                  final CharSequence s,
+                                  final int start,
+                                  final int end) {
             if (s == null) {
                 assert !(buffer.remaining() < 4);
                 buffer.put((byte) 'n').put((byte) 'u').put((byte) 'l').put((byte) 'l');
@@ -1245,15 +955,15 @@ final class FastDateFormat {
 
         // based on java.lang.Integer.getChars(int i, int index, char[] buf)
         private static void put(final ByteBuffer buffer, int i) {
-            int x = -i;
-            int size = (i < 0) ? Formatting.lengthOfUInt(x) + 1 : Formatting.lengthOfUInt(i);
+            final int x = -i;
+            final int size = (i < 0) ? Formatting.lengthOfUInt(x) + 1 : Formatting.lengthOfUInt(i);
 
             assert !(buffer.remaining() < size);
 
             int q, r;
             int charPos = size;
 
-            int oldPos = buffer.position();
+            final int oldPos = buffer.position();
 
             char sign = 0;
 
@@ -1299,7 +1009,7 @@ final class FastDateFormat {
             buffer.put((byte) b);
         }
 
-        public static void append(ByteBuffer buffer, Object object) {
+        public static void append(final ByteBuffer buffer, final Object object) {
             append(buffer, object == null ? "null" : object.toString());
         }
 

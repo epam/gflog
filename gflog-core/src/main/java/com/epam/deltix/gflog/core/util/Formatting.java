@@ -172,8 +172,10 @@ public final class Formatting {
             12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12
     };
 
-    private static final short[] MONTH_TO_DAYS_TABLE = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334}; // day start from 1 but we are looking up for ordinary year
-    private static final short[] MONTH_TO_DAYS_LEAP_TABLE = {-1, -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334}; // -1 since day start from 1, saving one sub
+    // day start from 1 but we are looking up for ordinary year
+    private static final short[] MONTH_TO_DAYS_TABLE = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+    // -1 since day start from 1, saving one sub
+    private static final short[] MONTH_TO_DAYS_LEAP_TABLE = {-1, -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
     private static final long ADDRESS_OF_ULONG_MULTIPLIER_TABLE;
     private static final long ADDRESS_OF_UINT_MULTIPLIER_TABLE;
@@ -1327,7 +1329,7 @@ public final class Formatting {
         }
     }
 
-    public static int formatDouble(@Nonnegative double value, @Nonnull byte[] array, @Nonnegative int offset) {
+    public static int formatDouble(@Nonnegative double value, final @Nonnull byte[] array, @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;
         // assert array != 0;
@@ -1355,7 +1357,7 @@ public final class Formatting {
         return offset;
     }
 
-    public static int formatDouble(@Nonnegative double value, @Nonnull MutableBuffer buffer, @Nonnegative int offset) {
+    public static int formatDouble(@Nonnegative double value, final @Nonnull MutableBuffer buffer, @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;
         // assert buffer != 0;
@@ -1384,8 +1386,8 @@ public final class Formatting {
     }
 
     public static int formatDouble(@Nonnegative double value,
-                                   @Nonnegative int precision,
-                                   @Nonnull byte[] array,
+                                   final @Nonnegative int precision,
+                                   final @Nonnull byte[] array,
                                    @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;
@@ -1417,8 +1419,8 @@ public final class Formatting {
     }
 
     public static int formatDouble(@Nonnegative double value,
-                                   @Nonnegative int precision,
-                                   @Nonnull MutableBuffer buffer,
+                                   final @Nonnegative int precision,
+                                   final @Nonnull MutableBuffer buffer,
                                    @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;

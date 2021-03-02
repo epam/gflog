@@ -126,7 +126,7 @@ public class LogAsciiEntryFormattingTest {
 
     @Test
     public void testDecimal64() {
-        verifyDecimal64(Decimal64Util.NaN);
+        verifyDecimal64(Decimal64Util.NAN);
         verifyDecimal64(Decimal64Util.NEGATIVE_INFINITY);
         verifyDecimal64(Decimal64Util.POSITIVE_INFINITY);
 

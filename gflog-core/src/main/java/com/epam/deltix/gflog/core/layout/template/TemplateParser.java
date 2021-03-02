@@ -25,12 +25,12 @@ public final class TemplateParser {
     public static final char MESSAGE = 'm';
     public static final char LINE_BREAK = 'n';
 
-    public static Template[] parse(String pattern, final ZoneId zoneId) {
-        pattern = unescape(pattern);
-        return split(pattern, zoneId);
+    public static Template[] parse(final String pattern, final ZoneId zoneId) {
+        final String unescaped = unescape(pattern);
+        return split(unescaped, zoneId);
     }
 
-    private static String unescape(String pattern) {
+    private static String unescape(final String pattern) {
         if (pattern.contains(ESCAPE_START)) {
             final StringBuilder builder = new StringBuilder();
 
@@ -61,7 +61,7 @@ public final class TemplateParser {
                 builder.append(pattern, i, length);
             }
 
-            pattern = builder.toString();
+            return builder.toString();
         }
 
         return pattern;

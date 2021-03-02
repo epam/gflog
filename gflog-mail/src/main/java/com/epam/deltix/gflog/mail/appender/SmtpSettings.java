@@ -14,17 +14,17 @@ final class SmtpSettings {
     private int timeout;
     private boolean debug;
 
-    public SmtpSettings(String to,
-                        String from,
-                        String subject,
-                        int maxSubjectLength,
-                        String host,
-                        int port,
-                        String secure,
-                        String username,
-                        String password,
-                        int timeout,
-                        boolean debug) {
+    SmtpSettings(final String to,
+                 final String from,
+                 final String subject,
+                 final int maxSubjectLength,
+                 final String host,
+                 final int port,
+                 final String secure,
+                 final String username,
+                 final String password,
+                 final int timeout,
+                 final boolean debug) {
         this.to = to;
         this.from = from;
         this.subject = subject;
@@ -42,7 +42,7 @@ final class SmtpSettings {
         return to;
     }
 
-    public void setTo(String to) {
+    public void setTo(final String to) {
         this.to = to;
     }
 
@@ -50,7 +50,7 @@ final class SmtpSettings {
         return from;
     }
 
-    public void setFrom(String from) {
+    public void setFrom(final String from) {
         this.from = from;
     }
 
@@ -58,7 +58,7 @@ final class SmtpSettings {
         return subject;
     }
 
-    public void setSubject(String subject) {
+    public void setSubject(final String subject) {
         this.subject = subject;
     }
 
@@ -66,7 +66,7 @@ final class SmtpSettings {
         return maxSubjectLength;
     }
 
-    public void setMaxSubjectLength(int maxSubjectLength) {
+    public void setMaxSubjectLength(final int maxSubjectLength) {
         this.maxSubjectLength = maxSubjectLength;
     }
 
@@ -74,7 +74,7 @@ final class SmtpSettings {
         return host;
     }
 
-    public void setHost(String host) {
+    public void setHost(final String host) {
         this.host = host;
     }
 
@@ -82,7 +82,7 @@ final class SmtpSettings {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(final int port) {
         this.port = port;
     }
 
@@ -90,7 +90,7 @@ final class SmtpSettings {
         return secure;
     }
 
-    public void setSecure(String secure) {
+    public void setSecure(final String secure) {
         this.secure = secure;
     }
 
@@ -98,7 +98,7 @@ final class SmtpSettings {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(final String username) {
         this.username = username;
     }
 
@@ -106,7 +106,7 @@ final class SmtpSettings {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(final String password) {
         this.password = password;
     }
 
@@ -114,7 +114,7 @@ final class SmtpSettings {
         return timeout;
     }
 
-    public void setTimeout(int timeout) {
+    public void setTimeout(final int timeout) {
         this.timeout = timeout;
     }
 
@@ -122,7 +122,7 @@ final class SmtpSettings {
         return debug;
     }
 
-    public void setDebug(boolean debug) {
+    public void setDebug(final boolean debug) {
         this.debug = debug;
     }
 }
