@@ -68,21 +68,9 @@ final class LogBuffer {
         return dataAddress;
     }
 
-    public int size() {
-        final long head = UNSAFE.getLongVolatile(null, headAddress);
-        final long tail = UNSAFE.getLongVolatile(null, tailAddress);
+    // region Producers
 
-        return (int) (tail - head);
-    }
-
-    public boolean isEmpty() {
-        final long head = UNSAFE.getLongVolatile(null, headAddress);
-        final long tail = UNSAFE.getLongVolatile(null, tailAddress);
-
-        return tail == head;
-    }
-
-    public int claim(final int length) {
+    public int tryClaim(final int length) {
         final int required = Util.align(length, LogRecordEncoder.ALIGNMENT);
         long head = UNSAFE.getLongVolatile(null, headCacheAddress);
 
@@ -121,6 +109,39 @@ final class LogBuffer {
         return offset;
     }
 
+    public int claim(final int length, final BackpressureCallback callback) {
+        final int required = Util.align(length, LogRecordEncoder.ALIGNMENT);
+
+        while (true) {
+            final long tail = UNSAFE.getAndAddLong(null, tailAddress, required);
+            final long tailNext = tail + required;
+
+            final int offset = (int) tail & mask;
+            final int continuous = capacity - offset;
+
+            long head = UNSAFE.getLongVolatile(null, headCacheAddress);
+
+            if (tailNext - head > capacity) {
+                head = UNSAFE.getLongVolatile(null, headAddress);
+
+                while (tailNext - head > capacity) {
+                    callback.onBackpressure();
+                    head = UNSAFE.getLongVolatile(null, headAddress);
+                }
+
+                UNSAFE.putOrderedLong(null, headCacheAddress, head);
+            }
+
+            if (required > continuous) {
+                UNSAFE.putOrderedInt(null, dataAddress + offset, -continuous);
+                UNSAFE.putOrderedInt(null, dataAddress, continuous - required);
+                continue;
+            }
+
+            return offset;
+        }
+    }
+
     public void commit(final int offset, final int length) {
         UNSAFE.putOrderedInt(null, dataAddress + offset, length);
     }
@@ -129,6 +150,10 @@ final class LogBuffer {
         final int padding = Util.align(length, LogRecordEncoder.ALIGNMENT);
         UNSAFE.putOrderedInt(null, dataAddress + offset, -padding);
     }
+
+    // endregion
+
+    // region Consumer
 
     public int read(final RecordHandler handler) {
         final long head = UNSAFE.getLong(headAddress);
@@ -166,6 +191,20 @@ final class LogBuffer {
         return read;
     }
 
+    public void unblock() {
+        final long head = UNSAFE.getLong(null, headAddress);
+        UNSAFE.putOrderedLong(null, headAddress, head + (1L << 60));
+    }
+
+    public boolean isEmpty() {
+        final long head = UNSAFE.getLong(headAddress);
+        final long tail = UNSAFE.getLongVolatile(null, tailAddress);
+
+        return tail == head;
+    }
+
+    // endregion
+
     private static int findCapacity(final int capacity) {
         if (capacity < MIN_CAPACITY) {
             return MIN_CAPACITY;
@@ -176,6 +215,12 @@ final class LogBuffer {
         }
 
         return Util.nextPowerOfTwo(capacity);
+    }
+
+    public interface BackpressureCallback {
+
+        void onBackpressure();
+
     }
 
     public interface RecordHandler {

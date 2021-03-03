@@ -6,12 +6,14 @@ import com.epam.deltix.gflog.core.appender.Appender;
 import com.epam.deltix.gflog.core.clock.Clock;
 import com.epam.deltix.gflog.core.idle.IdleStrategy;
 import com.epam.deltix.gflog.core.metric.Counter;
+import com.epam.deltix.gflog.core.service.LogBuffer.BackpressureCallback;
 
 import java.util.concurrent.ThreadFactory;
 
 
 final class AsyncLogService extends LogService {
 
+    protected final BackpressureCallback backpressure = this::onBackpressure;
     protected final LogBuffer buffer;
     protected final OverflowStrategy strategy;
     protected final Counter failedOffersCounter;
@@ -46,25 +48,25 @@ final class AsyncLogService extends LogService {
 
     @Override
     public void close() {
-        closed = true;
         runner.close();
     }
 
     @Override
     public void commit(final LogLocalEntry entry) {
         final LogBuffer buffer = this.buffer;
+
         final int required = entry.length();
+        final int offset;
 
-        int offset;
+        if (strategy == OverflowStrategy.WAIT) {
+            offset = buffer.claim(required, backpressure);
+        } else {
+            offset = buffer.tryClaim(required);
 
-        while ((offset = buffer.claim(required)) < 0) {
-            failedOffersCounter.increment();
-
-            if (strategy == OverflowStrategy.DISCARD || closed) {
+            if (offset < 0) {
+                failedOffersCounter.increment();
                 return;
             }
-
-            Thread.yield();
         }
 
         try {
@@ -75,6 +77,15 @@ final class AsyncLogService extends LogService {
         } catch (final Throwable e) {
             LogDebug.warn("error committing log entry to log buffer", e);
             buffer.abort(offset, required);
+        }
+    }
+
+    private void onBackpressure() {
+        try {
+            failedOffersCounter.increment();
+            Thread.yield();
+        } catch (final Throwable e) {
+            LogDebug.warn("error on backpressure callback", e);
         }
     }
 

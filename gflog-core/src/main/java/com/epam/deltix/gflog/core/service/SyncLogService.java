@@ -14,6 +14,8 @@ final class SyncLogService extends LogService {
     private final LogRecordDecoder decoder;
     private final LogProcessor processor;
 
+    private boolean closed;
+
     SyncLogService(final Logger[] loggers,
                    final Appender[] appenders,
                    final Clock clock,

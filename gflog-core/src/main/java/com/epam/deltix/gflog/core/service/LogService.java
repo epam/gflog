@@ -27,8 +27,6 @@ public abstract class LogService implements AutoCloseable {
     protected final Appender[] appenders;
     protected final LogInfo[] logs;
 
-    protected volatile boolean closed;
-
     public LogService(final Logger[] loggers,
                       final Appender[] appenders,
                       final Clock clock,

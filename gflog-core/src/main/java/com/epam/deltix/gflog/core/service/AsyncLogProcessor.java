@@ -19,6 +19,12 @@ final class AsyncLogProcessor extends LogProcessor implements LogBuffer.RecordHa
         this.decoder = new LogRecordDecoder(index);
     }
 
+    @Override
+    public void close() {
+        buffer.unblock();
+        super.close();
+    }
+
     public boolean active() {
         return active || !buffer.isEmpty();
     }
