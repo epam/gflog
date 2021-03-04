@@ -75,7 +75,7 @@ public final class BenchmarkUtil {
         final StackTraceElement[] stack = new StackTraceElement[depth];
 
         for (int i = 0; i < depth; i++) {
-            stack[i] = new StackTraceElement("com.some.fake.exception", "fakeMethod", null, -1);
+            stack[i] = new StackTraceElement("com.some.fake.exception", "fakeMethod", "fake.jar", 123);
         }
 
         exception.setStackTrace(stack);

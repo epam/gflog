@@ -54,6 +54,10 @@ final class Log4jBenchmarkUtil {
         );
     }
 
+    public static void logException(final BenchmarkState state) {
+        Holder.LOG.info("Some exception: ", state.exception);
+    }
+
     private static final class Holder {
 
         private static final Logger LOG = LogManager.getLogger(LOGGER);

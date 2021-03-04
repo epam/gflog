@@ -46,6 +46,7 @@ public class Log4jLatencyBenchmark {
             benchmarks.add(new BenchmarkDescriptor("log1Arg-" + config, prepare, cleanup, Log4jBenchmarkUtil::log1Arg));
             benchmarks.add(new BenchmarkDescriptor("log5Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log5Args));
             benchmarks.add(new BenchmarkDescriptor("log10Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log10Args));
+            benchmarks.add(new BenchmarkDescriptor("logException-" + config, prepare, cleanup, Log4jBenchmarkUtil::logException));
         }
 
         final Map<String, BenchmarkDescriptor> map = new LinkedHashMap<>();

@@ -104,11 +104,11 @@ final class GflogBenchmarkUtil {
     }
 
     public static void entryException(final BenchmarkState state) {
-        Holder.LOG.info().append("Exception: ").append(state.exception).commit();
+        Holder.LOG.info().append("Some exception: ").append(state.exception).commit();
     }
 
     public static void templateException(final BenchmarkState state) {
-        Holder.LOG.info("Exception: %s").with(state.exception);
+        Holder.LOG.info("Some exception: %s").with(state.exception);
     }
 
     private static final class Holder {
