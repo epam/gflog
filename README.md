@@ -50,6 +50,9 @@ Build the project with Gradle and Java 8:
 ./gradlew build
 ```
 
+## Acknowledgment
+This project was inspired by [gflogger](https://github.com/vladimirdolzhenko/gflogger) library by Vladimir Dolzhenko. It originally started as a fork but further enhancements and new API made it into a separate project.
+
 ## License
  Copyright (C) 2021 EPAM
 
