@@ -56,7 +56,7 @@ subprojects {
                 pom {
                     name = 'gflog'
                     packaging = 'jar'
-                    description = 'High efficient garbage free logging framework for Java 8+'
+                    description = 'Highly efficient garbage-free logging framework for Java 8+'
                     url = 'https://github.com/epam/GFLog'
 
                     scm {
