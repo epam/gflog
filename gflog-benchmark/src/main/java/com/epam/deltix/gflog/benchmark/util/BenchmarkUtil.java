@@ -34,7 +34,8 @@ public final class BenchmarkUtil {
     // causes a burst on a context switch if enabled, otherwise the guaranteed interval is preserved between operations
     public static final boolean CATCHUP = Boolean.getBoolean("benchmark.catchup");
 
-    public static final Exception EXCEPTION = newException(40);
+    public static final int EXCEPTION_STACK_DEPTH = Integer.getInteger("benchmark.exception.stack.depth", 40);
+    public static final Exception EXCEPTION = newException(EXCEPTION_STACK_DEPTH);
 
     public static String generateTempFile(final String prefix) {
         return TEMP_DIRECTORY + "/" + prefix + "-" + UUID.randomUUID() + ".log";

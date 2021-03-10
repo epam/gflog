@@ -34,6 +34,75 @@ class BenchmarkStateFields extends BenchmarkStatePadding {
     public long arg8 = 12345678901234L;
     public String arg9 = "string";
     public Throwable exception = BenchmarkUtil.EXCEPTION;
+    private int depth = -1;
+
+    public Object newObject() {
+        if (depth < 0) {
+            depth = findDepth();
+        }
+
+        return newObject(depth);
+    }
+
+    public Throwable newException() {
+        if (depth < 0) {
+            depth = findDepth();
+        }
+
+        return newException(depth);
+    }
+
+    public Throwable newExceptionWithoutStack() {
+        if (depth < 0) {
+            depth = findDepth();
+        }
+
+        return newExceptionWithoutStack(depth);
+    }
+
+    private static int findDepth() {
+        final Thread thread = Thread.currentThread();
+        final StackTraceElement[] stack = thread.getStackTrace();
+
+        final int depth = BenchmarkUtil.EXCEPTION_STACK_DEPTH - stack.length + 1;
+
+        if (depth < 0) {
+            throw new IllegalArgumentException("Current thread stack depth is more than requested");
+        }
+
+        return depth;
+    }
+
+    private static Object newObject(final int depth) {
+        if (depth <= 0) {
+            return new Object();
+        }
+
+        return newObject(depth - 1);
+    }
+
+    private static Throwable newException(final int depth) {
+        if (depth <= 0) {
+            return new Throwable("my-exception-with-stack");
+        }
+
+        return newException(depth - 1);
+    }
+
+    private static Throwable newExceptionWithoutStack(final int depth) {
+        if (depth <= 0) {
+            return new Throwable("my-exception-without-stack") {
+
+                @Override
+                public Throwable fillInStackTrace() {
+                    return this;
+                }
+
+            };
+        }
+
+        return newExceptionWithoutStack(depth - 1);
+    }
 
 }
 

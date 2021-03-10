@@ -55,7 +55,8 @@ final class Log4jBenchmarkUtil {
     }
 
     public static void logException(final BenchmarkState state) {
-        Holder.LOG.info("Some exception: ", state.exception);
+        final Throwable exception = state.newException();
+        Holder.LOG.info("Some exception: ", exception);
     }
 
     private static final class Holder {
