@@ -69,7 +69,7 @@ class LogProcessor implements AutoCloseable {
                 try {
                     appender.append(record);
                 } catch (final Throwable e) {
-                    enabled &= ~(1 << i);
+                    enabled &= ~(1L << i);
                     LogDebug.warn("appender: " + appender.getName() + " threw exception during processing record", e);
                 }
             }
@@ -89,7 +89,7 @@ class LogProcessor implements AutoCloseable {
                 try {
                     work += appender.flush();
                 } catch (final Throwable e) {
-                    enabled &= ~(1 << i);
+                    enabled &= ~(1L << i);
                     LogDebug.warn("appender: " + appender.getName() + " threw exception during flush", e);
                 }
             }

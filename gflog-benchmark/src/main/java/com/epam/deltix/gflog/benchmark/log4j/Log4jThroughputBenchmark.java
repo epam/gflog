@@ -5,7 +5,7 @@ import net.openhft.affinity.Affinity;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.ThreadParams;
 import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
@@ -67,13 +67,25 @@ public class Log4jThroughputBenchmark {
         Log4jBenchmarkUtil.log10Args(state);
     }
 
-    public static void main(final String[] args) throws RunnerException {
-        final Options opt = new OptionsBuilder()
+    @Benchmark
+    public void logException(final ThreadState state) {
+        Log4jBenchmarkUtil.logException(state);
+    }
+
+    @Benchmark
+    public void logCachedException(final ThreadState state) {
+        Log4jBenchmarkUtil.logCachedException(state);
+    }
+
+    public static void main(final String[] args) throws Exception {
+        final CommandLineOptions defaults = new CommandLineOptions(args);
+        final Options options = new OptionsBuilder()
+                .parent(defaults)
                 .include(Log4jThroughputBenchmark.class.getName())
                 // .addProfiler(GCProfiler.class)
                 .build();
 
-        new Runner(opt).run();
+        new Runner(options).run();
     }
 
     @State(Scope.Thread)

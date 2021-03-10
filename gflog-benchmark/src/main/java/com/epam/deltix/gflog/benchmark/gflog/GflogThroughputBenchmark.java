@@ -5,7 +5,7 @@ import net.openhft.affinity.Affinity;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.ThreadParams;
 import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
@@ -93,13 +93,35 @@ public class GflogThroughputBenchmark {
         GflogBenchmarkUtil.template10Args(state);
     }
 
-    public static void main(final String[] args) throws RunnerException {
-        final Options opt = new OptionsBuilder()
-                .include(GflogThroughputBenchmark.class.getName())
+    @Benchmark
+    public void entryException(final ThreadState state) {
+        GflogBenchmarkUtil.entryException(state);
+    }
+
+    @Benchmark
+    public void templateException(final ThreadState state) {
+        GflogBenchmarkUtil.templateException(state);
+    }
+
+    @Benchmark
+    public void entryCachedException(final ThreadState state) {
+        GflogBenchmarkUtil.entryCachedException(state);
+    }
+
+    @Benchmark
+    public void templateCachedException(final ThreadState state) {
+        GflogBenchmarkUtil.templateCachedException(state);
+    }
+
+    public static void main(final String[] args) throws Exception {
+        final CommandLineOptions defaults = new CommandLineOptions(args);
+        final Options options = new OptionsBuilder()
+                .parent(defaults)
+                .include(GflogStubBenchmark.class.getName())
                 // .addProfiler(GCProfiler.class)
                 .build();
 
-        new Runner(opt).run();
+        new Runner(options).run();
     }
 
     @State(Scope.Thread)
