@@ -15,9 +15,6 @@ import java.util.Map;
  */
 public class Log4jLatencyBenchmark {
 
-    // 100 bytes + (line separator 1-2)
-    // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
-
     private static final String[] CONFIGS = {
             "noop",
             "file",
@@ -47,6 +44,8 @@ public class Log4jLatencyBenchmark {
             benchmarks.add(new BenchmarkDescriptor("log5Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log5Args));
             benchmarks.add(new BenchmarkDescriptor("log10Args-" + config, prepare, cleanup, Log4jBenchmarkUtil::log10Args));
             benchmarks.add(new BenchmarkDescriptor("logException-" + config, prepare, cleanup, Log4jBenchmarkUtil::logException));
+            benchmarks.add(new BenchmarkDescriptor("logCachedException-" + config, prepare, cleanup,
+                    Log4jBenchmarkUtil::logCachedException));
         }
 
         final Map<String, BenchmarkDescriptor> map = new LinkedHashMap<>();

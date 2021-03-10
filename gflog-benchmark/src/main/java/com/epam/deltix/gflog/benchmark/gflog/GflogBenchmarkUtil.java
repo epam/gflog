@@ -113,6 +113,16 @@ final class GflogBenchmarkUtil {
         Holder.LOG.info("Some exception: %s").with(exception);
     }
 
+    public static void entryCachedException(final BenchmarkState state) {
+        final Throwable exception = state.exception;
+        Holder.LOG.info().append("Some exception: ").append(exception).commit();
+    }
+
+    public static void templateCachedException(final BenchmarkState state) {
+        final Throwable exception = state.exception;
+        Holder.LOG.info("Some exception: %s").with(exception);
+    }
+
     private static final class Holder {
 
         private static final Log LOG = LogFactory.getLog(LOGGER);

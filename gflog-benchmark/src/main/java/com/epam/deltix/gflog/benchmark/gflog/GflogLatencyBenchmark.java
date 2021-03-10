@@ -49,12 +49,16 @@ public class GflogLatencyBenchmark {
             benchmarks.add(new BenchmarkDescriptor("entry5Args-" + config, prepare, cleanup, GflogBenchmarkUtil::entry5Args));
             benchmarks.add(new BenchmarkDescriptor("entry10Args-" + config, prepare, cleanup, GflogBenchmarkUtil::entry10Args));
             benchmarks.add(new BenchmarkDescriptor("entryException-" + config, prepare, cleanup, GflogBenchmarkUtil::entryException));
+            benchmarks.add(new BenchmarkDescriptor("entryCachedException-" + config, prepare, cleanup,
+                    GflogBenchmarkUtil::entryCachedException));
 
             benchmarks.add(new BenchmarkDescriptor("template0Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::template0Arg));
             benchmarks.add(new BenchmarkDescriptor("template1Arg-" + config, prepare, cleanup, GflogBenchmarkUtil::template1Arg));
             benchmarks.add(new BenchmarkDescriptor("template5Args-" + config, prepare, cleanup, GflogBenchmarkUtil::template5Args));
             benchmarks.add(new BenchmarkDescriptor("template10Args-" + config, prepare, cleanup, GflogBenchmarkUtil::template10Args));
             benchmarks.add(new BenchmarkDescriptor("templateException-" + config, prepare, cleanup, GflogBenchmarkUtil::templateException));
+            benchmarks.add(new BenchmarkDescriptor("templateCachedException-" + config, prepare, cleanup,
+                    GflogBenchmarkUtil::templateCachedException));
         }
 
         final Map<String, BenchmarkDescriptor> map = new LinkedHashMap<>();

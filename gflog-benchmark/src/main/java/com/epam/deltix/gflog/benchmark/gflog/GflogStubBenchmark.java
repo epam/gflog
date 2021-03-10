@@ -20,7 +20,6 @@ public class GflogStubBenchmark {
 
     private static final Log LOG = LogFactory.getLog(GflogStubBenchmark.class);
 
-
     @Benchmark
     public void baseline() {
     }

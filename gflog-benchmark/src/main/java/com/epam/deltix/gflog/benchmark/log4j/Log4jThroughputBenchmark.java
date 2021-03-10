@@ -22,9 +22,6 @@ import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
 @Threads(1)
 public class Log4jThroughputBenchmark {
 
-    // 100 bytes + (line separator 1-2)
-    // 2020-10-01 14:25:58.310 INFO '123456789012345678901234567890' [12345678901234567890123] Hello world!
-
     @Param({
             "noop",
             "file"
