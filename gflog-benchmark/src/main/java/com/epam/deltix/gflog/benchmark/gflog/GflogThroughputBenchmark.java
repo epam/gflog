@@ -117,7 +117,7 @@ public class GflogThroughputBenchmark {
         final CommandLineOptions defaults = new CommandLineOptions(args);
         final Options options = new OptionsBuilder()
                 .parent(defaults)
-                .include(GflogStubBenchmark.class.getName())
+                .include(GflogThroughputBenchmark.class.getName())
                 // .addProfiler(GCProfiler.class)
                 .build();
 
