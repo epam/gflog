@@ -20,6 +20,7 @@ public abstract class LogService implements AutoCloseable {
     protected final int entryInitialCapacity;
     protected final int entryMaxCapacity;
     protected final boolean entryUtf8;
+    protected final boolean entryExceptional;
 
     protected final ThreadLocal<LogLocalEntry> logEntry;
     protected final Clock clock;
@@ -33,11 +34,13 @@ public abstract class LogService implements AutoCloseable {
                       final String entryTruncationSuffix,
                       final int entryInitialCapacity,
                       final int entryMaxCapacity,
-                      final boolean entryUtf8) {
+                      final boolean entryUtf8,
+                      final boolean entryExceptional) {
         this.entryTruncationSuffix = entryTruncationSuffix;
         this.entryInitialCapacity = entryInitialCapacity;
         this.entryMaxCapacity = entryMaxCapacity;
         this.entryUtf8 = entryUtf8;
+        this.entryExceptional = entryExceptional;
         this.logEntry = ThreadLocal.withInitial(this::newLogLocalEntry);
         this.clock = clock;
         this.logs = createLogInfos(loggers, appenders);
@@ -51,7 +54,8 @@ public abstract class LogService implements AutoCloseable {
                 entryTruncationSuffix,
                 entryInitialCapacity,
                 entryMaxCapacity,
-                entryUtf8
+                entryUtf8,
+                entryExceptional
         );
     }
 
@@ -72,7 +76,9 @@ public abstract class LogService implements AutoCloseable {
         return entry;
     }
 
-    public abstract void commit(final LogLocalEntry entry);
+    abstract void commit(final LogLocalEntry entry);
+
+    abstract void commit(final LogLocalEntry entry, final Throwable exception, final int exceptionPosition);
 
     public LogInfo register(final String logName, final int index) {
         logIndex.put(logName, index);

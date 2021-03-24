@@ -32,9 +32,13 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     private final LogService service;
     private final LogLimitedEntry entry;
     private final int offset;
+    private final boolean exceptional;
 
     private String template;
     private int templateIndex;
+
+    private Throwable exception;
+    private int exceptionPosition;
 
     private boolean committed = true;
 
@@ -43,14 +47,16 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
                   final String truncationSuffix,
                   final int initialCapacity,
                   final int maxCapacity,
-                  final boolean utf8) {
+                  final boolean utf8,
+                  final boolean exceptional) {
 
         this.service = service;
         this.entry = createEntry(thread, truncationSuffix, initialCapacity, maxCapacity, utf8);
         this.offset = entry.length();
+        this.exceptional = exceptional;
     }
 
-    public int length() {
+    int length() {
         return entry.length() - (int) (LENGTH_OFFSET - Util.ARRAY_BYTE_BASE_OFFSET);
     }
 
@@ -314,9 +320,14 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
         }
     }
 
-    private void doAppend(final Throwable exception) {
+    private void doAppend(final Throwable throwable) {
         try {
-            entry.append(exception);
+            if (!exceptional || throwable == null || exception != null) {
+                entry.append(throwable);
+            } else {
+                exception = throwable;
+                exceptionPosition = entry.length() - offset;
+            }
         } catch (final Throwable e) {
             warnAppendError(e);
         }
@@ -764,6 +775,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     public void abort() {
         if (verifyNotCommitted()) {
             committed = true;
+            exception = null;
         }
     }
 
@@ -816,7 +828,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     private void reuse() {
         if (!committed) {
             warnNotCommitted();
-            service.commit(this);
+            doCommit();
         }
 
         entry.reset(offset);
@@ -824,7 +836,15 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     private void doCommit() {
-        service.commit(this);
+        final Throwable throwable = exception;
+
+        if (throwable == null) {
+            service.commit(this);
+        } else {
+            exception = null;
+            service.commit(this, throwable, exceptionPosition);
+        }
+
         committed = true;
     }
 
@@ -865,7 +885,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
                                                final boolean utf8) {
 
         final String threadName = thread.getName();
-        final byte threadNameLength = (byte) Util.findUtf8Bound(threadName, 0, threadName.length(), Byte.MAX_VALUE);
+        final byte threadNameLength = (byte) Util.limitUtf8Index(threadName, 0, threadName.length(), Byte.MAX_VALUE);
         final int offset = (int) (THREAD_NAME_DATA_OFFSET + threadNameLength - Util.ARRAY_BYTE_BASE_OFFSET);
 
         final LogLimitedEntry entry = utf8 ?

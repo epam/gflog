@@ -10,8 +10,9 @@ import static com.epam.deltix.gflog.core.util.Util.UNSAFE;
 
 final class LogBuffer {
 
-    private static final int MIN_CAPACITY = 64 * 1024;
-    private static final int MAX_CAPACITY = 1024 * 1024 * 1024;
+    static final int MIN_CAPACITY = 64 * 1024;
+    static final int MAX_CAPACITY = 1024 * 1024 * 1024;
+
     private static final int MAX_READ_LENGTH = 64 * 1024;
 
     private static final int TAIL_OFFSET = Util.DOUBLE_CACHE_LINE_SIZE - Util.SIZE_OF_LONG;
@@ -32,8 +33,8 @@ final class LogBuffer {
     private final long headAddress;
     private final long headCacheAddress;
 
-    LogBuffer(int capacity) {
-        capacity = findCapacity(capacity);
+    LogBuffer(final int capacity) {
+        verify(capacity);
 
         final UnsafeBuffer buffer = UnsafeBuffer.allocateDirectAligned(capacity + TRAILER_LENGTH, Util.DOUBLE_CACHE_LINE_SIZE);
         buffer.wrap(buffer, 0, capacity);
@@ -205,16 +206,18 @@ final class LogBuffer {
 
     // endregion
 
-    private static int findCapacity(final int capacity) {
+    private static void verify(final int capacity) {
         if (capacity < MIN_CAPACITY) {
-            return MIN_CAPACITY;
+            throw new IllegalArgumentException("buffer capacity: " + capacity + " is less than min: " + MIN_CAPACITY);
         }
 
         if (capacity > MAX_CAPACITY) {
-            return MAX_CAPACITY;
+            throw new IllegalArgumentException("buffer capacity: " + capacity + " is more than max: " + MAX_CAPACITY);
         }
 
-        return Util.nextPowerOfTwo(capacity);
+        if (!Util.isPowerOfTwo(capacity)) {
+            throw new IllegalArgumentException("buffer capacity: " + capacity + " is not power of two");
+        }
     }
 
     public interface BackpressureCallback {

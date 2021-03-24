@@ -208,7 +208,7 @@ public final class Util {
         return Character.toCodePoint(c1, c2);
     }
 
-    public static int findUtf8Bound(final CharSequence value, int start, final int end, int limit) {
+    public static int limitUtf8Index(final CharSequence value, int start, final int end, int limit) {
         while (start < end) {
             final char c = value.charAt(start);
             boolean surrogate = false;
@@ -242,6 +242,27 @@ public final class Util {
         }
 
         return start;
+    }
+
+    public static int limitUtf8Length(final Buffer bytes, int offset, int length, int limit) {
+        if (length <= limit) {
+            return length;
+        }
+
+        while (limit > 0) {
+            final byte b = bytes.getByte(offset + limit - 1);
+
+            if (b > 0) {
+                break;
+            }
+
+            if ((b & 0b11000000) == 0b11000000) {
+                limit--;
+                break;
+            }
+        }
+
+        return limit;
     }
 
     public static UnsafeBuffer fromUtf8String(final String string) {

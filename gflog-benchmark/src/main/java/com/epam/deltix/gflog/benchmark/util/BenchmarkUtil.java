@@ -32,7 +32,7 @@ public final class BenchmarkUtil {
     public static final int AFFINITY_STEP = Integer.getInteger("benchmark.affinity.step", 1);
 
     // causes a burst on a context switch if enabled, otherwise the guaranteed interval is preserved between operations
-    public static final boolean CATCHUP = Boolean.getBoolean("benchmark.catchup");
+    public static final boolean CATCHUP = Boolean.parseBoolean(System.getProperty("benchmark.catchup", "true"));
 
     public static final int EXCEPTION_STACK_DEPTH = Integer.getInteger("benchmark.exception.stack.depth", 40);
     public static final Exception EXCEPTION = newException(EXCEPTION_STACK_DEPTH);

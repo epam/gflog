@@ -2,6 +2,7 @@ package com.epam.deltix.gflog.core.service;
 
 import com.epam.deltix.gflog.api.AppendableEntry;
 import com.epam.deltix.gflog.api.Loggable;
+import com.epam.deltix.gflog.core.util.Buffer;
 import com.epam.deltix.gflog.core.util.Formatting;
 import com.epam.deltix.gflog.core.util.Util;
 
@@ -66,7 +67,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
     @Override
     public final LogLimitedEntry append(final char value) {
         if (!truncated) {
-            appendChar(value);
+            doAppendChar(value);
         }
 
         return this;
@@ -121,7 +122,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
                 formatNull();
                 verifyLimit();
             } else {
-                appendCharSequence(value);
+                doAppendCharSequence(value);
             }
         }
 
@@ -135,7 +136,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
                 formatNull();
                 verifyLimit();
             } else {
-                appendCharSequence(value, start, end);
+                doAppendCharSequence(value, start, end);
             }
         }
 
@@ -149,7 +150,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
                 formatNull();
                 verifyLimit();
             } else {
-                appendString(value);
+                doAppendString(value);
             }
         }
 
@@ -163,7 +164,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
                 formatNull();
                 verifyLimit();
             } else {
-                appendString(value, start, end);
+                doAppendString(value, start, end);
             }
         }
 
@@ -197,7 +198,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
                 formatNull();
                 verifyLimit();
             } else {
-                appendString(text);
+                doAppendString(text);
             }
         }
 
@@ -250,9 +251,9 @@ abstract class LogLimitedEntry implements AppendableEntry {
             if (timestamp == Long.MIN_VALUE) {
                 formatNull();
             } else {
-                verifyTimestamp(timestamp);
+                Formatting.verifyTimestamp(timestamp);
                 ensureSpace(LENGTH_OF_TIMESTAMP);
-                length = formatTimestamp(timestamp, array, length);
+                length = Formatting.formatTimestamp(timestamp, array, length);
             }
 
             verifyLimit();
@@ -267,7 +268,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
             if (timestamp == Long.MIN_VALUE) {
                 formatNull();
             } else {
-                verifyTimestamp(timestamp);
+                Formatting.verifyTimestamp(timestamp);
                 ensureSpace(LENGTH_OF_DATE);
                 length = Formatting.formatDate(timestamp, array, length);
             }
@@ -284,7 +285,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
             if (timestamp == Long.MIN_VALUE) {
                 formatNull();
             } else {
-                verifyTimestamp(timestamp);
+                Formatting.verifyTimestamp(timestamp);
                 ensureSpace(LENGTH_OF_TIME);
                 length = Formatting.formatTime(timestamp, array, length);
             }
@@ -295,17 +296,28 @@ abstract class LogLimitedEntry implements AppendableEntry {
         return this;
     }
 
-    abstract void appendChar(final char value);
+    void appendUtf8Bytes(final Buffer bytes, final int bytesOffset, final int bytesLength) {
+        if (!truncated) {
+            if (bytes == null) {
+                formatNull();
+                verifyLimit();
+            } else {
+                doAppendUtf8Bytes(bytes, bytesOffset, bytesLength);
+            }
+        }
+    }
+
+    abstract void doAppendChar(final char value);
 
 
-    abstract void appendString(final String value);
+    abstract void doAppendString(final String value);
 
-    abstract void appendString(final String value, final int start, final int end);
+    abstract void doAppendString(final String value, final int start, final int end);
 
 
-    abstract void appendCharSequence(final CharSequence value);
+    abstract void doAppendCharSequence(final CharSequence value);
 
-    abstract void appendCharSequence(final CharSequence value, final int start, final int end);
+    abstract void doAppendCharSequence(final CharSequence value, final int start, final int end);
 
 
     abstract String substring(final int start, final int end);
@@ -313,13 +325,13 @@ abstract class LogLimitedEntry implements AppendableEntry {
     abstract String substring();
 
 
-    final void appendAsciiChar(final char value) {
+    final void doAppendAsciiChar(final char value) {
         ensureSpace();
-        length = formatByte((byte) (value & 0x7F), array, length);
+        length = Formatting.formatByte((byte) (value & 0x7F), array, length);
         verifyLimit();
     }
 
-    final void appendUtf8Char(final char value) {
+    final void doAppendUtf8Char(final char value) {
         ensureSpace(4);
 
         final int before = length;
@@ -330,22 +342,22 @@ abstract class LogLimitedEntry implements AppendableEntry {
         }
     }
 
-    final void appendAsciiString(final String value) {
+    final void doAppendAsciiString(final String value) {
         final int size = value.length();
         final int remaining = limit - length;
 
         if (size <= remaining) {
             ensureSpace(size);
-            length = formatAsciiString(value, array, length);
+            length = Formatting.formatAsciiString(value, array, length);
         } else {
             ensureSpace(remaining + truncationSuffix.length());
-            length = formatAsciiString(value, 0, remaining, array, length);
-            length = formatAsciiString(truncationSuffix, array, length);
+            length = Formatting.formatAsciiString(value, 0, remaining, array, length);
+            length = Formatting.formatAsciiString(truncationSuffix, array, length);
             truncated = true;
         }
     }
 
-    final void appendAsciiString(final String value, final int start, final int end) {
+    final void doAppendAsciiString(final String value, final int start, final int end) {
         if (start < 0 || end < start || end > value.length()) {
             throw new IndexOutOfBoundsException();
         }
@@ -355,31 +367,31 @@ abstract class LogLimitedEntry implements AppendableEntry {
 
         if (size <= remaining) {
             ensureSpace(size);
-            length = formatAsciiString(value, start, end, array, length);
+            length = Formatting.formatAsciiString(value, start, end, array, length);
         } else {
             ensureSpace(remaining + truncationSuffix.length());
-            length = formatAsciiString(value, start, start + remaining, array, length);
-            length = formatAsciiString(truncationSuffix, array, length);
+            length = Formatting.formatAsciiString(value, start, start + remaining, array, length);
+            length = Formatting.formatAsciiString(truncationSuffix, array, length);
             truncated = true;
         }
     }
 
-    final void appendAsciiCharSequence(final CharSequence value) {
+    final void doAppendAsciiCharSequence(final CharSequence value) {
         final int size = value.length();
         final int remaining = limit - length;
 
         if (size <= remaining) {
             ensureSpace(size);
-            length = formatAsciiCharSequence(value, array, length);
+            length = Formatting.formatAsciiCharSequence(value, array, length);
         } else {
             ensureSpace(remaining + truncationSuffix.length());
-            length = formatAsciiCharSequence(value, 0, remaining, array, length);
-            length = formatAsciiString(truncationSuffix, array, length);
+            length = Formatting.formatAsciiCharSequence(value, 0, remaining, array, length);
+            length = Formatting.formatAsciiString(truncationSuffix, array, length);
             truncated = true;
         }
     }
 
-    final void appendAsciiCharSequence(final CharSequence value, final int start, final int end) {
+    final void doAppendAsciiCharSequence(final CharSequence value, final int start, final int end) {
         if (start < 0 || end < start || end > value.length()) {
             throw new IndexOutOfBoundsException();
         }
@@ -389,16 +401,16 @@ abstract class LogLimitedEntry implements AppendableEntry {
 
         if (size <= remaining) {
             ensureSpace(size);
-            length = formatAsciiCharSequence(value, start, end, array, length);
+            length = Formatting.formatAsciiCharSequence(value, start, end, array, length);
         } else {
             ensureSpace(remaining + truncationSuffix.length());
-            length = formatAsciiCharSequence(value, start, start + remaining, array, length);
-            length = formatAsciiString(truncationSuffix, array, length);
+            length = Formatting.formatAsciiCharSequence(value, start, start + remaining, array, length);
+            length = Formatting.formatAsciiString(truncationSuffix, array, length);
             truncated = true;
         }
     }
 
-    final void appendUtf8String(final String value) {
+    final void doAppendUtf8String(final String value) {
         final int size = value.length();
         final int remaining = limit - length;
 
@@ -408,7 +420,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         } else {
             ensureSpace(remaining + truncationSuffix.length());
 
-            final int bound = Util.findUtf8Bound(value, 0, size, remaining);
+            final int bound = Util.limitUtf8Index(value, 0, size, remaining);
             length = Formatting.formatUtf8String(value, 0, bound, array, length);
 
             if (bound < size) {
@@ -418,7 +430,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         }
     }
 
-    final void appendUtf8String(final String value, final int start, final int end) {
+    final void doAppendUtf8String(final String value, final int start, final int end) {
         if (start < 0 || end < start || end > value.length()) {
             throw new IndexOutOfBoundsException();
         }
@@ -432,7 +444,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         } else {
             ensureSpace(remaining + truncationSuffix.length());
 
-            final int bound = Util.findUtf8Bound(value, start, end, remaining);
+            final int bound = Util.limitUtf8Index(value, start, end, remaining);
             length = Formatting.formatUtf8String(value, start, bound, array, length);
 
             if (bound < end) {
@@ -442,7 +454,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         }
     }
 
-    final void appendUtf8CharSequence(final CharSequence value) {
+    final void doAppendUtf8CharSequence(final CharSequence value) {
         final int size = value.length();
         final int remaining = limit - length;
 
@@ -452,7 +464,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         } else {
             ensureSpace(remaining + truncationSuffix.length());
 
-            final int bound = Util.findUtf8Bound(value, 0, size, remaining);
+            final int bound = Util.limitUtf8Index(value, 0, size, remaining);
             length = Formatting.formatUtf8CharSequence(value, 0, bound, array, length);
 
             if (bound < size) {
@@ -462,7 +474,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         }
     }
 
-    final void appendUtf8CharSequence(final CharSequence value, final int start, final int end) {
+    final void doAppendUtf8CharSequence(final CharSequence value, final int start, final int end) {
         if (start < 0 || end < start || end > value.length()) {
             throw new IndexOutOfBoundsException();
         }
@@ -476,13 +488,28 @@ abstract class LogLimitedEntry implements AppendableEntry {
         } else {
             ensureSpace(remaining + truncationSuffix.length());
 
-            final int bound = Util.findUtf8Bound(value, start, end, remaining);
+            final int bound = Util.limitUtf8Index(value, start, end, remaining);
             length = Formatting.formatUtf8CharSequence(value, start, bound, array, length);
 
             if (bound < end) {
                 length = Formatting.formatAsciiString(truncationSuffix, array, length);
                 truncated = true;
             }
+        }
+    }
+
+    final void doAppendUtf8Bytes(final Buffer bytes, final int bytesOffset, final int bytesLength) {
+        final int remaining = limit - length;
+
+        if (bytesLength <= remaining) {
+            ensureSpace(bytesLength);
+            length = Formatting.formatBytes(bytes, bytesOffset, bytesLength, array, length);
+        } else {
+            final int bytesLimit = Util.limitUtf8Length(bytes, bytesOffset, bytesLength, remaining);
+            ensureSpace(remaining + truncationSuffix.length());
+
+            length = Formatting.formatBytes(bytes, bytesOffset, bytesLimit, array, length);
+            truncated = true;
         }
     }
 
@@ -502,7 +529,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
     }
 
     final void formatDouble(final double value, @Nonnegative final int precision) {
-        verifyDoublePrecision(precision);
+        Formatting.verifyDoublePrecision(precision);
 
         if (Double.isNaN(value)) {
             formatNaN();
@@ -547,7 +574,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         final boolean sign = (value < 0);
         final int exponent = (int) ((value >>> DECIMAL_64_EXPONENT_SHIFT) & DECIMAL_64_EXPONENT_MASK) - DECIMAL_64_EXPONENT_BIAS;
 
-        ensureSpace(maxLengthOfDecimal64(exponent));
+        ensureSpace(Formatting.maxLengthOfDecimal64(exponent));
         length = Formatting.formatDecimal64(sign, exponent, significand, array, length);
     }
 
@@ -574,7 +601,7 @@ abstract class LogLimitedEntry implements AppendableEntry {
         final boolean sign = (value < 0);
         final int exponent = (int) ((value >>> DECIMAL_64_EXPONENT_SHIFT_SPECIAL) & DECIMAL_64_EXPONENT_MASK) - DECIMAL_64_EXPONENT_BIAS;
 
-        ensureSpace(maxLengthOfDecimal64(exponent));
+        ensureSpace(Formatting.maxLengthOfDecimal64(exponent));
         length = Formatting.formatDecimal64(sign, exponent, significand, array, length);
     }
 

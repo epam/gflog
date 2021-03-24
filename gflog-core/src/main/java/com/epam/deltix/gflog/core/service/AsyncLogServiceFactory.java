@@ -7,20 +7,24 @@ import com.epam.deltix.gflog.core.idle.IdleStrategy;
 import com.epam.deltix.gflog.core.idle.IdleStrategyFactory;
 import com.epam.deltix.gflog.core.metric.Counter;
 import com.epam.deltix.gflog.core.metric.NoOpCounter;
-import com.epam.deltix.gflog.core.util.PropertyUtil;
+import com.epam.deltix.gflog.core.util.Util;
 
 import java.util.concurrent.ThreadFactory;
+
+import static com.epam.deltix.gflog.core.util.PropertyUtil.getMemory;
 
 
 public final class AsyncLogServiceFactory extends LogServiceFactory {
 
-    protected static final int BUFFER_CAPACITY = PropertyUtil.getMemory("gflog.log.buffer.capacity", 8 * 1024 * 1024);
+    protected static final int BUFFER_DEFAULT_CAPACITY = getMemory("gflog.log.buffer.capacity", 8 * 1024 * 1024);
+    protected static final int EXCEPTION_INDEX_DEFAULT_CAPACITY = getMemory("gflog.exception.index.capacity", 4 * 1024);
 
     protected ThreadFactory threadFactory;
     protected IdleStrategy idleStrategy;
     protected OverflowStrategy overflowStrategy;
 
-    protected int bufferCapacity;
+    protected int bufferCapacity = BUFFER_DEFAULT_CAPACITY;
+    protected int exceptionIndexCapacity = EXCEPTION_INDEX_DEFAULT_CAPACITY;
 
     protected Counter failedOffersCounter;
 
@@ -80,8 +84,29 @@ public final class AsyncLogServiceFactory extends LogServiceFactory {
             overflowStrategy = OverflowStrategy.WAIT;
         }
 
-        if (bufferCapacity <= 0) {
-            bufferCapacity = BUFFER_CAPACITY;
+        if (bufferCapacity <= LogBuffer.MIN_CAPACITY) {
+            bufferCapacity = LogBuffer.MIN_CAPACITY;
+        }
+
+        if (bufferCapacity >= LogBuffer.MAX_CAPACITY) {
+            bufferCapacity = LogBuffer.MAX_CAPACITY;
+        }
+
+        bufferCapacity = Util.nextPowerOfTwo(bufferCapacity);
+
+        if (exceptionIndexCapacity > 0) {
+            final int maxCapacity = bufferCapacity / ExceptionIndex.MIN_SEGMENT;
+            final int minCapacity = ExceptionIndex.MIN_CAPACITY;
+
+            if (exceptionIndexCapacity < minCapacity) {
+                exceptionIndexCapacity = minCapacity;
+            }
+
+            if (exceptionIndexCapacity > maxCapacity) {
+                exceptionIndexCapacity = maxCapacity;
+            }
+
+            exceptionIndexCapacity = Util.nextPowerOfTwo(exceptionIndexCapacity);
         }
 
         if (failedOffersCounter == null) {
@@ -99,6 +124,9 @@ public final class AsyncLogServiceFactory extends LogServiceFactory {
                                        final boolean entryUtf8) {
 
         final LogBuffer buffer = new LogBuffer(bufferCapacity);
+        final ExceptionIndex index = (exceptionIndexCapacity > 0) ?
+                new ExceptionIndex(exceptionIndexCapacity, bufferCapacity) :
+                null;
 
         final int messageMaxCapacity = buffer.maxRecordLength() - LogRecordEncoder.MIN_SIZE - entryTruncationSuffix.length();
         final int effectiveEntryMaxCapacity = Math.min(entryMaxCapacity, messageMaxCapacity);
@@ -113,6 +141,7 @@ public final class AsyncLogServiceFactory extends LogServiceFactory {
                 effectiveEntryMaxCapacity,
                 entryUtf8,
                 buffer,
+                index,
                 threadFactory,
                 idleStrategy,
                 overflowStrategy,

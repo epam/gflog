@@ -11,6 +11,7 @@ import java.util.Map;
 import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.ENCODING;
 
 /**
+ * Most settings are only applied to Java 8.
  * Shows safepoints: -XX:+UnlockDiagnosticVMOptions -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime
  * Shows details: -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1
  * Adjusts interval: -XX:GuaranteedSafepointInterval=1200000

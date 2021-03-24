@@ -20,28 +20,28 @@ final class LogAsciiEntry extends LogLimitedEntry {
     }
 
     @Override
-    void appendChar(final char value) {
-        appendAsciiChar(value);
+    void doAppendChar(final char value) {
+        doAppendAsciiChar(value);
     }
 
     @Override
-    void appendString(final String value) {
-        appendAsciiString(value);
+    void doAppendString(final String value) {
+        doAppendAsciiString(value);
     }
 
     @Override
-    void appendString(final String value, final int start, final int end) {
-        appendAsciiString(value, start, end);
+    void doAppendString(final String value, final int start, final int end) {
+        doAppendAsciiString(value, start, end);
     }
 
     @Override
-    void appendCharSequence(final CharSequence value) {
-        appendAsciiCharSequence(value);
+    void doAppendCharSequence(final CharSequence value) {
+        doAppendAsciiCharSequence(value);
     }
 
     @Override
-    void appendCharSequence(final CharSequence value, final int start, final int end) {
-        appendAsciiCharSequence(value, start, end);
+    void doAppendCharSequence(final CharSequence value, final int start, final int end) {
+        doAppendAsciiCharSequence(value, start, end);
     }
 
 }

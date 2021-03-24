@@ -23,9 +23,9 @@ final class SyncLogService extends LogService {
                    final int entryInitialCapacity,
                    final int entryMaxCapacity,
                    final boolean entryUtf8) {
-        super(loggers, appenders, clock, entryTruncationSuffix, entryInitialCapacity, entryMaxCapacity, entryUtf8);
+        super(loggers, appenders, clock, entryTruncationSuffix, entryInitialCapacity, entryMaxCapacity, entryUtf8, false);
 
-        this.decoder = new LogRecordDecoder(logIndex);
+        this.decoder = new LogRecordDecoder(null, logIndex, null);
         this.processor = new LogProcessor(appenders);
     }
 
@@ -51,6 +51,11 @@ final class SyncLogService extends LogService {
             processor.process(record);
             processor.flush();
         }
+    }
+
+    @Override
+    void commit(final LogLocalEntry entry, final Throwable exception, final int exceptionPosition) {
+        throw new UnsupportedOperationException();
     }
 
 }

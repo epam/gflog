@@ -12,11 +12,11 @@ final class AsyncLogProcessor extends LogProcessor implements LogBuffer.RecordHa
 
     private volatile boolean active = true;
 
-    AsyncLogProcessor(final LogBuffer buffer, final LogIndex index, final Appender[] appenders) {
+    AsyncLogProcessor(final LogBuffer buffer, final LogRecordDecoder decoder, final Appender[] appenders) {
         super(appenders);
 
         this.buffer = buffer;
-        this.decoder = new LogRecordDecoder(index);
+        this.decoder = decoder;
     }
 
     @Override
