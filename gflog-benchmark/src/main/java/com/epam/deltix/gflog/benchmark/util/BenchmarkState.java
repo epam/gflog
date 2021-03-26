@@ -94,8 +94,8 @@ class BenchmarkStateFields extends BenchmarkStatePadding {
             return new Throwable("my-exception-without-stack") {
 
                 @Override
-                public Throwable fillInStackTrace() {
-                    return this;
+                public Throwable fillInStackTrace() { // lgtm [java/non-sync-override]
+                    return this;                      // false positive
                 }
 
             };
