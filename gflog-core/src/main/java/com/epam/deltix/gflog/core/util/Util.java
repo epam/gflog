@@ -244,25 +244,35 @@ public final class Util {
         return start;
     }
 
-    public static int limitUtf8Length(final Buffer bytes, int offset, int length, int limit) {
+    public static int limitUtf8Length(final Buffer bytes, final int offset, final int length, final int limit) {
         if (length <= limit) {
             return length;
         }
 
-        while (limit > 0) {
-            final byte b = bytes.getByte(offset + limit - 1);
+        int result = limit;
 
-            if (b > 0) {
+        while (result > 0) {
+            final int b = bytes.getByte(offset + result - 1);
+
+            if (b >= 0) {
                 break;
             }
 
+            --result;
+
             if ((b & 0b11000000) == 0b11000000) {
-                limit--;
+                final int size = ((b & 0b11100000) == 0b11000000) ? 2 :
+                        ((b & 0b11110000) == 0b11100000) ? 3 : 4;
+
+                if (limit - result >= size) {
+                    result = limit;
+                }
+
                 break;
             }
         }
 
-        return limit;
+        return result;
     }
 
     public static UnsafeBuffer fromUtf8String(final String string) {
