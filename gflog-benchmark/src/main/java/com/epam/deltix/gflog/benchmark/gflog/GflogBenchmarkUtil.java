@@ -123,6 +123,10 @@ final class GflogBenchmarkUtil {
         Holder.LOG.info("Some exception: %s").with(exception);
     }
 
+    public static Log getLog() {
+        return Holder.LOG;
+    }
+
     private static final class Holder {
 
         private static final Log LOG = LogFactory.getLog(LOGGER);

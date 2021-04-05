@@ -1,7 +1,6 @@
 package com.epam.deltix.gflog.benchmark.gflog;
 
 import com.epam.deltix.gflog.api.Log;
-import com.epam.deltix.gflog.api.LogFactory;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
 import org.openjdk.jol.vm.VM;
 
@@ -26,7 +25,7 @@ public class GflogMemoryBenchmark {
     private static void run() {
         System.out.println(VM.current().details());
 
-        final Log log = LogFactory.getLog(GflogMemoryBenchmark.class);
+        final Log log = GflogBenchmarkUtil.getLog();
         log.info("Hello there!");
 
         System.out.println("Before: " + BenchmarkUtil.memoryFootprint(log));

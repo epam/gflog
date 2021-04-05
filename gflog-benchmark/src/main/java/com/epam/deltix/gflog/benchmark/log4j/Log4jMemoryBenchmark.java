@@ -1,6 +1,5 @@
 package com.epam.deltix.gflog.benchmark.log4j;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openjdk.jol.vm.VM;
 
@@ -26,7 +25,7 @@ public class Log4jMemoryBenchmark {
     private static void run() {
         System.out.println(VM.current().details());
 
-        final Logger log = LogManager.getLogger(Log4jMemoryBenchmark.class);
+        final Logger log = Log4jBenchmarkUtil.getLogger();
         log.info("Hello there!");
 
         System.out.println("Before: " + memoryFootprint(log));
