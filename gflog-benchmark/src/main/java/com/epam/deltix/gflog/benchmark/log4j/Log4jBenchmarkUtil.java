@@ -21,7 +21,7 @@ final class Log4jBenchmarkUtil {
         System.setProperty("temp-file", generateTempFile("log4j-" + config + "-benchmark"));
 
         deleteTempDirectory();
-        LogManager.exists(LOGGER); // forces lazy initialization
+        final Logger lazy = getLogger(); // forces lazy initialization
     }
 
     public static void cleanup() {
@@ -62,6 +62,10 @@ final class Log4jBenchmarkUtil {
     public static void logCachedException(final BenchmarkState state) {
         final Throwable exception = state.exception;
         Holder.LOG.info("Some exception: ", exception);
+    }
+
+    public static Logger getLogger() {
+        return Holder.LOG;
     }
 
     private static final class Holder {
