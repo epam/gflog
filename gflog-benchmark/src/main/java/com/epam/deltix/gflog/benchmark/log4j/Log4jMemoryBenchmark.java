@@ -45,7 +45,7 @@ public class Log4jMemoryBenchmark {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
         final int max = maxSize(random);
 
-        final int size = random.nextInt(0, max);
+        final int size = random.nextInt(0, max + 1);
         message.setLength(size);
 
         for (int i = 0; i < size; i++) {
