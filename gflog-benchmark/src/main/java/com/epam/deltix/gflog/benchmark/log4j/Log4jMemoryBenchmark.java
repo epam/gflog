@@ -1,5 +1,6 @@
 package com.epam.deltix.gflog.benchmark.log4j;
 
+import com.epam.deltix.gflog.benchmark.util.BenchmarkUtil;
 import org.apache.logging.log4j.Logger;
 import org.openjdk.jol.vm.VM;
 
@@ -7,10 +8,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.epam.deltix.gflog.benchmark.log4j.Log4jBenchmarkUtil.cleanup;
 import static com.epam.deltix.gflog.benchmark.log4j.Log4jBenchmarkUtil.prepare;
-import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.memoryFootprint;
 
 
 public class Log4jMemoryBenchmark {
+
+    private static final int[] MESSAGES_LIMITS = {1_000_000, 10_000_000, 100_000_000};
 
     public static void main(final String[] args) {
         prepare("noop");
@@ -28,17 +30,20 @@ public class Log4jMemoryBenchmark {
         final Logger log = Log4jBenchmarkUtil.getLogger();
         log.info("Hello there!");
 
-        System.out.println("Before: " + memoryFootprint(log));
-        System.out.println();
+        System.out.println("Messages: 0. " + BenchmarkUtil.memoryFootprint(log));
 
         final StringBuilder message = new StringBuilder();
+        int messages = 0;
 
-        for (int i = 0; i < 1000000; i++) {
-            generate(message);
-            log.info("Hello there: {}", message);
+        for (int messagesLimit : MESSAGES_LIMITS) {
+            for (; messages < messagesLimit; messages++) {
+                generate(message);
+                log.info("Hello there: {}", message);
+            }
+
+            System.out.println();
+            System.out.println("Messages: " + messages + ". " + BenchmarkUtil.memoryFootprint(log));
         }
-
-        System.out.println("After: " + memoryFootprint(log));
     }
 
     private static void generate(final StringBuilder message) {

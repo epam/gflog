@@ -12,6 +12,8 @@ import static com.epam.deltix.gflog.benchmark.gflog.GflogBenchmarkUtil.prepare;
 
 public class GflogMemoryBenchmark {
 
+    private static final int[] MESSAGES_LIMITS = {1_000_000, 10_000_000, 100_000_000};
+
     public static void main(final String[] args) throws Exception {
         prepare("noop", "UTF-8");
 
@@ -28,22 +30,25 @@ public class GflogMemoryBenchmark {
         final Log log = GflogBenchmarkUtil.getLog();
         log.info("Hello there!");
 
-        System.out.println("Before: " + BenchmarkUtil.memoryFootprint(log));
-        System.out.println();
+        System.out.println("Messages: 0. " + BenchmarkUtil.memoryFootprint(log));
 
         final StringBuilder message = new StringBuilder();
+        int messages = 0;
 
-        for (int i = 0; i < 1000000; i++) {
-            generate(message);
+        for (final int messagesLimit : MESSAGES_LIMITS) {
+            for (; messages < messagesLimit; messages++) {
+                generate(message);
 
-            log.info("Hello there: %s, %s, %s, %s")
-                    .with(message)
-                    .with(generateInt())
-                    .with(generateLong())
-                    .with(generateChar());
+                log.info("Hello there: %s, %s, %s, %s")
+                        .with(message)
+                        .with(generateInt())
+                        .with(generateLong())
+                        .with(generateChar());
+            }
+
+            System.out.println();
+            System.out.println("Messages: " + messages + ". " + BenchmarkUtil.memoryFootprint(log));
         }
-
-        System.out.println("After: " + BenchmarkUtil.memoryFootprint(log));
     }
 
     private static void generate(final StringBuilder message) {
