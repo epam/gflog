@@ -39,9 +39,10 @@ log.info("Hello world! This is a %s message for you!")
 
 ## Reference
 
-* [Bridges](https://github.com/epam/GFLog/wiki/Bridges)    - how to configure bridges for the existing logging frameworks.
+* [Bridges](https://github.com/epam/GFLog/wiki/Bridges)             - how to configure bridges for the existing logging frameworks.
 * [Configuration](https://github.com/epam/GFLog/wiki/Configuration) - how to configure gflog.
-* [Performance](https://github.com/epam/GFLog/wiki/Performance) - what gflog's performance.
+* [XML Config](https://github.com/epam/gflog/wiki/XML-Config)       - how to configure gflog with a xml config.
+* [Performance](https://github.com/epam/GFLog/wiki/Performance)     - what gflog's performance.
 
 ## Build
 
