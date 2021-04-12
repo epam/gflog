@@ -35,7 +35,7 @@ public class Log4jMemoryBenchmark {
         final StringBuilder message = new StringBuilder();
         int messages = 0;
 
-        for (int messagesLimit : MESSAGES_LIMITS) {
+        for (final int messagesLimit : MESSAGES_LIMITS) {
             for (; messages < messagesLimit; messages++) {
                 generate(message);
                 log.info("Hello there: {}", message);
