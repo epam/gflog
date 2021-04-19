@@ -5,6 +5,7 @@ import com.epam.deltix.gflog.api.LogLevel;
 import com.epam.deltix.gflog.core.LogRecord;
 import com.epam.deltix.gflog.core.layout.Layout;
 import com.epam.deltix.gflog.core.util.UnsafeBuffer;
+import com.epam.deltix.gflog.core.util.Util;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,8 +31,8 @@ public abstract class NioAppender<T extends WritableByteChannel> extends Appende
                           final Layout layout) {
         super(name, level);
 
-        this.byteBuffer = ByteBuffer.allocateDirect(bufferCapacity);
-        this.buffer = new UnsafeBuffer(byteBuffer);
+        this.buffer = UnsafeBuffer.allocateDirectedAlignedPadded(bufferCapacity, Util.DOUBLE_CACHE_LINE_SIZE);
+        this.byteBuffer = buffer.byteBuffer();
         this.layout = layout;
         this.capacity = bufferCapacity;
         this.flushCapacity = flushCapacity;

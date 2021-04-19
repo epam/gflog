@@ -352,9 +352,8 @@ public final class Util {
      * @param alignment for the buffer.
      * @return the direct {@link ByteBuffer}.
      */
-    static ByteBuffer allocateDirectAlignedAndPadded(final int capacity, final int alignment) {
+    static ByteBuffer allocateDirectAlignedPadded(final int capacity, final int alignment) {
         final ByteBuffer buffer = allocateDirectAligned(capacity + alignment, alignment);
-
         buffer.limit(buffer.limit() - alignment);
 
         return buffer.slice();

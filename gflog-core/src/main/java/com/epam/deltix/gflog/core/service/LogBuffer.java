@@ -36,7 +36,7 @@ final class LogBuffer {
     LogBuffer(final int capacity) {
         verify(capacity);
 
-        final UnsafeBuffer buffer = UnsafeBuffer.allocateDirectAligned(capacity + TRAILER_LENGTH, Util.DOUBLE_CACHE_LINE_SIZE);
+        final UnsafeBuffer buffer = UnsafeBuffer.allocateDirectedAlignedPadded(capacity + TRAILER_LENGTH, Util.DOUBLE_CACHE_LINE_SIZE);
         buffer.wrap(buffer, 0, capacity);
 
         final long dataAddress = buffer.address();

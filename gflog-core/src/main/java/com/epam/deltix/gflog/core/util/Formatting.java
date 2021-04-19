@@ -177,6 +177,8 @@ public final class Formatting {
     // -1 since day start from 1, saving one sub
     private static final short[] MONTH_TO_DAYS_LEAP_TABLE = {-1, -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
+    private static final Buffer BUFFER_REFERENCE;
+
     private static final long ADDRESS_OF_ULONG_MULTIPLIER_TABLE;
     private static final long ADDRESS_OF_UINT_MULTIPLIER_TABLE;
     private static final long ADDRESS_OF_UINT_LENGTH_TABLE;
@@ -210,7 +212,11 @@ public final class Formatting {
                 daysToMonthTableSpace + daysToMonthLeapTableSpace +
                 postPadding;
 
-        final long memoryAddress = UNSAFE.allocateMemory(memorySpace);
+        final Buffer buffer = UnsafeBuffer.allocateDirectedAlignedPadded(memorySpace, DOUBLE_CACHE_LINE_SIZE);
+        final long memoryAddress = buffer.address();
+
+        BUFFER_REFERENCE = buffer;
+
         ADDRESS_OF_ULONG_MULTIPLIER_TABLE = align(memoryAddress + DOUBLE_CACHE_LINE_SIZE, DOUBLE_CACHE_LINE_SIZE);
         ADDRESS_OF_UINT_MULTIPLIER_TABLE = ADDRESS_OF_ULONG_MULTIPLIER_TABLE + ulongMultiplierTableSpace;
         ADDRESS_OF_UINT_LENGTH_TABLE = ADDRESS_OF_UINT_MULTIPLIER_TABLE + uintMultiplierTableSpace;
