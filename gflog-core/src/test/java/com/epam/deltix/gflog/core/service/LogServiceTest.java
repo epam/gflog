@@ -18,8 +18,8 @@ import java.util.Collections;
 
 public abstract class LogServiceTest {
 
-    private static final int MESSAGES = 500 * 1000;
-    private static final int LOGS = 1000;
+    private static final int MESSAGES = 1000 * 1000;
+    private static final int LOGS = 100 * 1000;
 
     private final LogService service;
     private final Log[] logs;
@@ -35,11 +35,6 @@ public abstract class LogServiceTest {
         service = factory.create(Collections.singletonList(logger), Collections.singletonList(appender));
 
         logs = new Log[LOGS];
-        for (int log = 0; log < LOGS; log++) {
-            final String logName = "log" + TestUtil.randomLongWithLength(1, 18);
-            final LogInfo logInfo = service.register(logName, log);
-            logs[log] = new Log(logName, logInfo);
-        }
 
         producers = new Producer[producerCount];
         for (int number = 0; number < producerCount; number++) {
@@ -79,8 +74,10 @@ public abstract class LogServiceTest {
         final int logIndex = TestUtil.randomInt(0, LOGS - 1);
         final int logLevel = LogLevel.INFO.ordinal();
 
-        final String logName = logs[logIndex].name;
-        final long appenderMask = logs[logIndex].appenderMask[logLevel];
+        final Log log = getOrCreateLog(logIndex);
+
+        final String logName = log.name;
+        final long appenderMask = log.appenderMask[logLevel];
 
         final int exceptionDepth = TestUtil.randomInt(0, 1000);
         final Throwable exception = (TestUtil.randomInt(0, 1000) == 0) ?
@@ -114,6 +111,20 @@ public abstract class LogServiceTest {
                     .with(sequence)
                     .with(exception);
         }
+    }
+
+    private synchronized Log getOrCreateLog(final int logIndex) {
+        Log log = logs[logIndex];
+
+        if (log == null) {
+            final String logName = "log" + TestUtil.randomLongWithLength(1, 18);
+            final LogInfo logInfo = service.register(logName, logIndex);
+
+            log = new Log(logName, logInfo);
+            logs[logIndex] = log;
+        }
+
+        return log;
     }
 
     private Exception newException(final int sequence, final int depth) {
