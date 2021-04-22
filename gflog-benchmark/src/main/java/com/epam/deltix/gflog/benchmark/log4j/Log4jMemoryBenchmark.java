@@ -12,7 +12,7 @@ import static com.epam.deltix.gflog.benchmark.log4j.Log4jBenchmarkUtil.prepare;
 
 public class Log4jMemoryBenchmark {
 
-    private static final int[] MESSAGES_LIMITS = {1_000_000, 10_000_000, 100_000_000};
+    private static final int[] MESSAGES_LIMITS = {1_000_000, 10_000_000, 100_000_000, 1_000_000_000};
 
     public static void main(final String[] args) throws Exception {
         prepare("noop");
