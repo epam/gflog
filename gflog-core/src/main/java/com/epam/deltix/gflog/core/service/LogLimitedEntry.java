@@ -35,6 +35,10 @@ abstract class LogLimitedEntry implements AppendableEntry {
         this.capacity = capacity;
     }
 
+    final boolean truncated() {
+        return truncated;
+    }
+
     final int length() {
         return length;
     }

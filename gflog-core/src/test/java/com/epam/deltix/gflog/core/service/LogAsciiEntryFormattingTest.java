@@ -136,6 +136,15 @@ public class LogAsciiEntryFormattingTest {
         }
     }
 
+    @Test
+    public void testCyclicException() {
+        final RuntimeException one = new RuntimeException();
+        final RuntimeException two = new RuntimeException(one);
+
+        one.initCause(two);
+        entry.append(one);
+    }
+
     private void verifyDecimal64(long decimal64) {
         Decimal64Util.appendTo(decimal64, expected);
         entry.appendDecimal64(decimal64);

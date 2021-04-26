@@ -1,16 +1,33 @@
 package com.epam.deltix.gflog.core.service;
 
+import com.epam.deltix.gflog.core.util.PropertyUtil;
+
 import static com.epam.deltix.gflog.core.util.Util.LINE_SEPARATOR;
 
 
 final class LogEntryUtil {
 
+    private static final int DEPTH_LIMIT = PropertyUtil.getInteger("gflog.exception.depth.limit", 16);
+
     public static void appendException(final Throwable e, final LogLimitedEntry entry) {
         entry.append(LINE_SEPARATOR);
-        appendException(e, entry, 1);
+        appendException(e, entry, 1, 1);
     }
 
-    private static void appendException(final Throwable e, final LogLimitedEntry entry, final int depth) {
+    private static void appendException(final Throwable e,
+                                        final LogLimitedEntry entry,
+                                        final int indent,
+                                        final int depth) {
+
+        if (entry.truncated()) {
+            return;
+        }
+
+        if (depth > DEPTH_LIMIT) {
+            entry.append(">>(Cyclic Exception?)>>");
+            return;
+        }
+
         entry.append(e.getClass().getName());
 
         final String message = e.getMessage();
@@ -23,23 +40,26 @@ final class LogEntryUtil {
 
         final StackTraceElement[] stack = e.getStackTrace();
         if (stack != null) {
-            appendStack(stack, entry, depth);
+            appendStack(stack, entry, indent);
         }
 
         final Throwable[] suppresses = e.getSuppressed();
         if (suppresses != null) {
-            appendSuppresses(suppresses, entry, depth);
+            appendSuppresses(suppresses, entry, indent, depth);
         }
 
         final Throwable cause = e.getCause();
         if (cause != null) {
-            appendCause(cause, entry, depth);
+            appendCause(cause, entry, indent, depth);
         }
     }
 
-    private static void appendStack(final StackTraceElement[] stack, final LogLimitedEntry entry, final int depth) {
+    private static void appendStack(final StackTraceElement[] stack,
+                                    final LogLimitedEntry entry,
+                                    final int indent) {
+
         for (final StackTraceElement element : stack) {
-            appendTabs(depth, entry);
+            appendTabs(indent, entry);
 
             entry.append("at ");
             entry.append(element.getClassName());
@@ -70,20 +90,28 @@ final class LogEntryUtil {
         }
     }
 
-    private static void appendSuppresses(final Throwable[] suppresses, final LogLimitedEntry entry, final int depth) {
+    private static void appendSuppresses(final Throwable[] suppresses,
+                                         final LogLimitedEntry entry,
+                                         final int indent,
+                                         final int depth) {
+
         for (final Throwable suppress : suppresses) {
             entry.append(LINE_SEPARATOR);
-            appendTabs(depth, entry);
+            appendTabs(indent, entry);
             entry.append("suppressed: ");
-            appendException(suppress, entry, depth + 1);
+            appendException(suppress, entry, indent + 1, depth + 1);
         }
     }
 
-    private static void appendCause(final Throwable cause, final LogLimitedEntry entry, final int depth) {
+    private static void appendCause(final Throwable cause,
+                                    final LogLimitedEntry entry,
+                                    final int indent,
+                                    final int depth) {
+
         entry.append(LINE_SEPARATOR);
-        appendTabs(depth - 1, entry);
+        appendTabs(indent - 1, entry);
         entry.append("caused by: ");
-        appendException(cause, entry, depth);
+        appendException(cause, entry, indent, depth + 1);
     }
 
     private static void appendTabs(final int tabs, final LogLimitedEntry entry) {
