@@ -3,6 +3,9 @@ package com.epam.deltix.gflog.benchmark.util;
 import com.google.monitoring.runtime.instrumentation.AllocationRecorder;
 import com.google.monitoring.runtime.instrumentation.Sampler;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,16 +38,18 @@ public final class Allocator implements Sampler {
         final ArrayList<Stat> allocations = lookup.toList();
 
         if (allocations.isEmpty()) {
-            return "N/A (to enable allocation tracing: -javaagent:path/java-allocation-instrumenter-3.3.0.jar)";
+            return "N/A - to enable: -javaagent:" + Location.LOCATION;
         }
 
         allocations.removeIf(stat -> stat.clazz == Tracer.class);
 
         final ArrayList<String> lines = new ArrayList<>();
         lines.add("");
-        lines.add(String.format("%12s%12s%12s   %s", "COUNT", "AVG", "SUM", "Class"));
+        lines.add(String.format("%15s%15s%15s   %s", "COUNT", "AVG", "SUM", "Class"));
 
         final Comparator<Stat> comparator = Comparator.comparingLong(stat -> stat.sum);
+        final Counter totalCount = new Counter();
+        final Counter totalSum = new Counter();
 
         allocations
                 .stream()
@@ -55,10 +60,13 @@ public final class Allocator implements Sampler {
                     final long sum = stat.sum;
                     final long avg = sum / count;
 
-                    lines.add(String.format("%12d%12d%12d   %s", count, avg, sum, clazz));
+                    totalCount.value += count;
+                    totalSum.value += sum;
+
+                    lines.add(String.format("%15d%15d%15d   %s", count, avg, sum, clazz));
                 });
 
-        lines.add("");
+        lines.add(String.format("%15d%15s%15d   %s", totalCount.value, "", totalSum.value, "(total)"));
 
         final String separator = System.lineSeparator();
         return String.join(separator, lines);
@@ -86,6 +94,12 @@ public final class Allocator implements Sampler {
         AllocationRecorder.addSampler(allocator);
 
         return allocator;
+    }
+
+    private static final class Counter {
+
+        private long value;
+
     }
 
     private static final class Stat {
@@ -159,6 +173,29 @@ public final class Allocator implements Sampler {
     }
 
     private static final class Tracer {
+    }
+
+    private static final class Location {
+
+        private static final String LOCATION;
+
+        static {
+            String location = "path-to/java-allocation-instrumenter-3.3.0.jar";
+
+            try {
+                final URI uri = Sampler.class.getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .toURI();
+
+                location = new File(uri).getAbsolutePath();
+            } catch (final URISyntaxException e) {
+                // ignore
+            }
+
+            LOCATION = location;
+        }
+
     }
 
 }

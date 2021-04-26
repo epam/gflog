@@ -41,7 +41,7 @@ public class Log4jMemoryBenchmark {
 
             for (; messages < messagesLimit; messages++) {
                 final StringBuilder message = generator.nextMessage();
-                log.info("Hello there: {}", message);
+                log.info("{}", message);
             }
 
             Thread.sleep(1000);
@@ -49,7 +49,11 @@ public class Log4jMemoryBenchmark {
 
             System.out.println();
             System.out.println("Messages: " + messages);
+
+            System.out.println();
             System.out.println("Footprint: " + BenchmarkUtil.memoryFootprint(log));
+
+            System.out.println();
             System.out.println("Allocations: " + allocator.toFootprint());
         }
     }

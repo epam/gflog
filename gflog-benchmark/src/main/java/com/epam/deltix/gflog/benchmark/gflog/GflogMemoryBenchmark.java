@@ -31,7 +31,7 @@ public class GflogMemoryBenchmark {
         final Generator generator = new Generator();
         final Log log = GflogBenchmarkUtil.getLog();
 
-        log.info("Hello there: {}").with(generator.nextMessage());
+        log.info("%s").with(generator.nextMessage());
         System.out.println("Messages: 0. " + BenchmarkUtil.memoryFootprint(log));
 
         int messages = 0;
@@ -47,8 +47,13 @@ public class GflogMemoryBenchmark {
             Thread.sleep(1000);
             allocator.stop();
 
+            System.out.println();
             System.out.println("Messages: " + messages);
+
+            System.out.println();
             System.out.println("Footprint: " + BenchmarkUtil.memoryFootprint(log));
+
+            System.out.println();
             System.out.println("Allocations: " + allocator.toFootprint());
         }
     }
