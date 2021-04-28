@@ -32,9 +32,9 @@ public class Log4jMemoryBenchmark {
         final Logger log = Log4jBenchmarkUtil.getLogger();
 
         log.info("{}", generator.nextMessage());
-        System.out.println("Messages: 0. " + BenchmarkUtil.memoryFootprint(log));
+        System.out.println("Messages: 1. " + BenchmarkUtil.memoryFootprint(log));
 
-        int messages = 0;
+        int messages = 1;
 
         for (final int messagesLimit : MESSAGES_LIMITS) {
             allocator.start();
