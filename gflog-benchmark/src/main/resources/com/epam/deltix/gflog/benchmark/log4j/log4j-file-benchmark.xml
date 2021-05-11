@@ -1,4 +1,4 @@
-<Configuration name="Benchmark" status="info">
+<Configuration name="Benchmark" status="info" shutdownHook="disable">
     <Appenders>
         <File name="file" fileName="${sys:temp-file}" immediateFlush="false">
             <PatternLayout pattern="%d %p '%c' [%t] %m%n"/>

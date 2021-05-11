@@ -129,4 +129,22 @@ public final class BenchmarkUtil {
         return String.join(System.lineSeparator(), lines);
     }
 
+    public static void gc(final String prefix) throws Exception {
+        for (int i = 0; i < 5; i++) {
+            System.gc();
+            Thread.sleep(1000);
+        }
+
+        System.out.println();
+        System.out.println(prefix);
+        System.out.println("--------------- GC Start ---------------");
+
+        for (int i = 0; i < 10; i++) {
+            System.gc();
+        }
+
+        System.out.println("---------------- GC End ----------------");
+        System.out.println();
+    }
+
 }

@@ -7,6 +7,7 @@ import org.openjdk.jol.vm.VM;
 
 import static com.epam.deltix.gflog.benchmark.log4j.Log4jBenchmarkUtil.cleanup;
 import static com.epam.deltix.gflog.benchmark.log4j.Log4jBenchmarkUtil.prepare;
+import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.gc;
 
 
 public class Log4jMemoryBenchmark {
@@ -25,13 +26,18 @@ public class Log4jMemoryBenchmark {
     };
 
     public static void main(final String[] args) throws Exception {
+        gc("Before prepare - log4j is not initialized");
         prepare("noop");
 
         try {
+            gc("Before experiment - log4j is initialized");
             run();
+            gc("After experiment - log4j is not yet destroyed");
         } finally {
             cleanup();
         }
+
+        gc("After cleanup - log4j is destroyed");
     }
 
     private static void run() throws Exception {

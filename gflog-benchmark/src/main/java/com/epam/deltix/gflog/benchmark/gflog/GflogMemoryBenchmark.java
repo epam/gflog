@@ -7,6 +7,7 @@ import org.openjdk.jol.vm.VM;
 
 import static com.epam.deltix.gflog.benchmark.gflog.GflogBenchmarkUtil.cleanup;
 import static com.epam.deltix.gflog.benchmark.gflog.GflogBenchmarkUtil.prepare;
+import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.gc;
 
 
 public class GflogMemoryBenchmark {
@@ -25,13 +26,18 @@ public class GflogMemoryBenchmark {
     };
 
     public static void main(final String[] args) throws Exception {
+        gc("Before prepare - gflog is not initialized");
         prepare("noop", "UTF-8");
 
         try {
+            gc("Before experiment - gflog is initialized");
             run();
+            gc("After experiment - gflog is not yet destroyed");
         } finally {
             cleanup();
         }
+
+        gc("After cleanup - gflog is destroyed");
     }
 
     private static void run() throws Exception {
