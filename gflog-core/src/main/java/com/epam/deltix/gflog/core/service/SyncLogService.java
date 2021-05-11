@@ -36,8 +36,12 @@ final class SyncLogService extends LogService {
 
     @Override
     public synchronized void close() {
-        closed = true;
-        processor.close();
+        try {
+            closed = true;
+            processor.close();
+        } finally {
+            logEntry.remove();
+        }
     }
 
     @Override

@@ -61,7 +61,11 @@ final class AsyncLogService extends LogService {
 
     @Override
     public void close() {
-        runner.close();
+        try {
+            runner.close();
+        } finally {
+            logEntry.remove();
+        }
     }
 
     @Override
