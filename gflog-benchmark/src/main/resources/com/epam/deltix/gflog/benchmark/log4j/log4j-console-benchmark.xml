@@ -1,0 +1,12 @@
+<Configuration name="Benchmark" status="info" shutdownHook="disable">
+    <Appenders>
+        <Console name="console">
+            <PatternLayout pattern="%d %p '%c' [%t] %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+</Configuration>
