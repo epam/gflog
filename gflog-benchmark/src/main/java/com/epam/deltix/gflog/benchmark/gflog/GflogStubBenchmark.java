@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark;
+package com.epam.deltix.gflog.benchmark.gflog;
 
 import com.epam.deltix.gflog.api.Log;
 import com.epam.deltix.gflog.api.LogFactory;
@@ -16,10 +16,9 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class StubOverheadBenchmark {
+public class GflogStubBenchmark {
 
-    private static final Log LOG = LogFactory.getLog(StubOverheadBenchmark.class);
-
+    private static final Log LOG = LogFactory.getLog(GflogStubBenchmark.class);
 
     @Benchmark
     public void baseline() {
@@ -121,7 +120,7 @@ public class StubOverheadBenchmark {
 
     public static void main(final String[] args) throws Exception {
         final Options opt = new OptionsBuilder()
-                .include(StubOverheadBenchmark.class.getName())
+                .include(GflogStubBenchmark.class.getName())
                 .build();
 
         new Runner(opt).run();

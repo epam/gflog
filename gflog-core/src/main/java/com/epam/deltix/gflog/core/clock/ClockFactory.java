@@ -55,8 +55,8 @@ public class ClockFactory implements Factory<Clock> {
 
     private static final class NativeClocks {
 
-        private final static MethodHandle HANDLE_REALTIME_TIME;
-        private final static MethodHandle HANDLE_REALTIME_COARSE_TIME;
+        private static final MethodHandle HANDLE_REALTIME_TIME;
+        private static final MethodHandle HANDLE_REALTIME_COARSE_TIME;
 
         static {
             MethodHandle precise = null;

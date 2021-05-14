@@ -8,13 +8,13 @@ import java.util.Arrays;
 
 final class LogIndex {
 
-    private Buffer[] map = new Buffer[64];
+    private Buffer[] map = new Buffer[256];
 
     void put(final String name, final int index) {
         Buffer[] map = this.map;
 
         if (index >= map.length) {
-            map = Arrays.copyOf(this.map, index << 1);
+            map = Arrays.copyOf(map, index << 1);
             Util.UNSAFE.storeFence();
             this.map = map;
         }

@@ -172,8 +172,12 @@ public final class Formatting {
             12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12
     };
 
-    private static final short[] MONTH_TO_DAYS_TABLE = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334}; // day start from 1 but we are looking up for ordinary year
-    private static final short[] MONTH_TO_DAYS_LEAP_TABLE = {-1, -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334}; // -1 since day start from 1, saving one sub
+    // day start from 1 but we are looking up for ordinary year
+    private static final short[] MONTH_TO_DAYS_TABLE = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+    // -1 since day start from 1, saving one sub
+    private static final short[] MONTH_TO_DAYS_LEAP_TABLE = {-1, -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+
+    private static final Buffer BUFFER_REFERENCE;
 
     private static final long ADDRESS_OF_ULONG_MULTIPLIER_TABLE;
     private static final long ADDRESS_OF_UINT_MULTIPLIER_TABLE;
@@ -208,7 +212,11 @@ public final class Formatting {
                 daysToMonthTableSpace + daysToMonthLeapTableSpace +
                 postPadding;
 
-        final long memoryAddress = UNSAFE.allocateMemory(memorySpace);
+        final Buffer buffer = UnsafeBuffer.allocateDirectedAlignedPadded(memorySpace, DOUBLE_CACHE_LINE_SIZE);
+        final long memoryAddress = buffer.address();
+
+        BUFFER_REFERENCE = buffer;
+
         ADDRESS_OF_ULONG_MULTIPLIER_TABLE = align(memoryAddress + DOUBLE_CACHE_LINE_SIZE, DOUBLE_CACHE_LINE_SIZE);
         ADDRESS_OF_UINT_MULTIPLIER_TABLE = ADDRESS_OF_ULONG_MULTIPLIER_TABLE + ulongMultiplierTableSpace;
         ADDRESS_OF_UINT_LENGTH_TABLE = ADDRESS_OF_UINT_MULTIPLIER_TABLE + uintMultiplierTableSpace;
@@ -1242,11 +1250,32 @@ public final class Formatting {
         // assert array != null;
         // assert offset >= 0;
 
-        final long leftPart = value / 100_000_000;
-        final long rightPart = value - 100_000_000 * leftPart;
+        final long left = value / 100_000_000;
 
-        formatUInt2Digits((int) leftPart, array, offset);
-        formatUInt8Digits((int) rightPart, array, offset + 2);
+        short digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (left << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset, digits);
+
+        long right = value - 100_000_000 * left;
+        long rightNew = 2748779070L * right >>> 38;
+        long rightRemainder = right - 100 * rightNew;
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightRemainder << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 8, digits);
+
+        right = 2748779070L * rightNew >>> 38;
+        rightRemainder = rightNew - 100 * right;
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightRemainder << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 6, digits);
+
+        rightNew = (int) (2748779070L * right >>> 38);
+        rightRemainder = right - 100 * rightNew;
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightRemainder << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 4, digits);
+
+        digits = UNSAFE.getShort(ADDRESS_OF_DIGITS_TABLE + (rightNew << 1));
+        UNSAFE.putShort(array, ARRAY_BYTE_BASE_OFFSET + offset + 2, digits);
 
         return offset + 10;
     }
@@ -1306,7 +1335,7 @@ public final class Formatting {
         }
     }
 
-    public static int formatDouble(@Nonnegative double value, @Nonnull byte[] array, @Nonnegative int offset) {
+    public static int formatDouble(@Nonnegative double value, final @Nonnull byte[] array, @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;
         // assert array != 0;
@@ -1334,7 +1363,7 @@ public final class Formatting {
         return offset;
     }
 
-    public static int formatDouble(@Nonnegative double value, @Nonnull MutableBuffer buffer, @Nonnegative int offset) {
+    public static int formatDouble(@Nonnegative double value, final @Nonnull MutableBuffer buffer, @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;
         // assert buffer != 0;
@@ -1363,8 +1392,8 @@ public final class Formatting {
     }
 
     public static int formatDouble(@Nonnegative double value,
-                                   @Nonnegative int precision,
-                                   @Nonnull byte[] array,
+                                   final @Nonnegative int precision,
+                                   final @Nonnull byte[] array,
                                    @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;
@@ -1396,8 +1425,8 @@ public final class Formatting {
     }
 
     public static int formatDouble(@Nonnegative double value,
-                                   @Nonnegative int precision,
-                                   @Nonnull MutableBuffer buffer,
+                                   final @Nonnegative int precision,
+                                   final @Nonnull MutableBuffer buffer,
                                    @Nonnegative int offset) {
         // Preconditions:
         // assert !Double.isNaN(value) && Long.MIN_VALUE < value && value <= Long.MAX_VALUE;

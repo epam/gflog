@@ -18,8 +18,8 @@ import java.util.Collections;
 
 public abstract class LogServiceTest {
 
-    private static final int MESSAGES = 500 * 1000;
-    private static final int LOGS = 1000;
+    private static final int MESSAGES = 1000 * 1000;
+    private static final int LOGS = 100 * 1000;
 
     private final LogService service;
     private final Log[] logs;
@@ -27,18 +27,14 @@ public abstract class LogServiceTest {
     private final Producer[] producers;
     private final int[] sequence;
 
-    public LogServiceTest(final int producerCount, final LogServiceFactory factory) {
+    public LogServiceTest(final int producerCount, final String entryEncoding, final LogServiceFactory factory) {
         final VerifyingAppender appender = new VerifyingAppender();
         final Logger logger = new Logger(LogLevel.DEBUG, appender);
 
+        factory.setEntryEncoding(entryEncoding);
         service = factory.create(Collections.singletonList(logger), Collections.singletonList(appender));
 
         logs = new Log[LOGS];
-        for (int log = 0; log < LOGS; log++) {
-            final String logName = "log" + TestUtil.randomLongWithLength(1, 18);
-            final LogInfo logInfo = service.register(logName, log);
-            logs[log] = new Log(logName, logInfo);
-        }
 
         producers = new Producer[producerCount];
         for (int number = 0; number < producerCount; number++) {
@@ -78,8 +74,14 @@ public abstract class LogServiceTest {
         final int logIndex = TestUtil.randomInt(0, LOGS - 1);
         final int logLevel = LogLevel.INFO.ordinal();
 
-        final String logName = logs[logIndex].name;
-        final long appenderMask = logs[logIndex].appenderMask[logLevel];
+        final Log log = getOrCreateLog(logIndex);
+
+        final String logName = log.name;
+        final long appenderMask = log.appenderMask[logLevel];
+
+        final int exceptionDepth = TestUtil.randomInt(0, 1000);
+        final Throwable exception = (TestUtil.randomInt(0, 1000) == 0) ?
+                newException(sequence, exceptionDepth) : null;
 
         if (TestUtil.randomInt(0, 256) == 7) {
             service.claim(logIndex, logLevel, appenderMask)
@@ -98,42 +100,72 @@ public abstract class LogServiceTest {
                     .append(". ")
                     .append("Sequence: ")
                     .append(sequence)
+                    .append(". ")
+                    .append("Exception: ")
+                    .append(exception)
                     .commit();
         } else {
-            service.claim(logIndex, logLevel, appenderMask, "Producer: %s. Logger: %s. Sequence: %s")
+            service.claim(logIndex, logLevel, appenderMask, "Producer: %s. Logger: %s. Sequence: %s. Exception: %s.")
                     .with(producer)
                     .with(logName)
-                    .with(sequence);
+                    .with(sequence)
+                    .with(exception);
         }
+    }
+
+    private synchronized Log getOrCreateLog(final int logIndex) {
+        Log log = logs[logIndex];
+
+        if (log == null) {
+            final String logName = "log" + TestUtil.randomLongWithLength(1, 18);
+            final LogInfo logInfo = service.register(logName, logIndex);
+
+            log = new Log(logName, logInfo);
+            logs[logIndex] = log;
+        }
+
+        return log;
+    }
+
+    private Exception newException(final int sequence, final int depth) {
+        if (depth <= 0) {
+            return new Exception("my-exception: #" + sequence);
+        }
+
+        return newException(sequence, depth - 1);
     }
 
     private void verify(final LogRecord record) {
         final String message = Util.toUtf8String(record.getMessage());
         final String[] parts = split(message);
 
-        if (parts.length != 3) {
+        if (parts.length != 4) {
             Assert.fail(message);
         }
 
         final int producer = Integer.parseUnsignedInt(parts[0].substring("Producer: ".length()));
         final String logger = parts[1].substring("Logger: ".length());
         final int number = Integer.parseUnsignedInt(parts[2].substring("Sequence: ".length()));
+        final String exception = parts[3].substring("Exception: ".length());
 
         Assert.assertEquals(logger, Util.toUtf8String(record.getLogName()));
         Assert.assertEquals(LogLevel.INFO, record.getLogLevel());
         Assert.assertEquals(sequence[producer]++, number);
         Assert.assertEquals(producers[producer].getName(), Util.toUtf8String(record.getThreadName()));
         Assert.assertTrue(record.getTimestamp() > 0);
+
+        if (!exception.startsWith("null")) {
+            Assert.assertTrue(parts[3], parts[3].contains("my-exception: #" + number));
+        }
     }
 
     private String[] split(final String message) {
-        final ArrayList<String> parts = new ArrayList<>(3);
+        final ArrayList<String> parts = new ArrayList<>(4);
 
+        for (int i = 0, c = 1; ; c++) {
+            final int j = message.indexOf(". ", i);
 
-        for (int i = 0; ; ) {
-            int j = message.indexOf(". ", i);
-
-            if (j < 0) {
+            if (j < 0 || c == 4) {
                 parts.add(message.substring(i));
                 break;
             }
@@ -150,7 +182,7 @@ public abstract class LogServiceTest {
         private final String name;
         private final long[] appenderMask;
 
-        public Log(final String name, final LogInfo info) {
+        Log(final String name, final LogInfo info) {
             this.name = name;
             this.appenderMask = info.getAppenderMask();
         }
@@ -162,7 +194,7 @@ public abstract class LogServiceTest {
         private int messages;
         private volatile boolean active = true;
 
-        public Producer(final int producer) {
+        Producer(final int producer) {
             super("Producer #" + producer);
 
             this.producer = producer;
@@ -177,7 +209,12 @@ public abstract class LogServiceTest {
 
         @Override
         public void close() throws Exception {
-            join(10000);
+            join(60000);
+
+            if (isAlive()) {
+                Assert.fail("Thread is still alive: " + this);
+            }
+
             active = false;
         }
 
@@ -185,7 +222,7 @@ public abstract class LogServiceTest {
 
     private class VerifyingAppender extends Appender {
 
-        public VerifyingAppender() {
+        VerifyingAppender() {
             super("verifier", LogLevel.INFO);
         }
 

@@ -1,5 +1,7 @@
 package com.epam.deltix.gflog.core.idle;
 
+import com.epam.deltix.gflog.core.util.Util;
+
 import java.util.concurrent.locks.LockSupport;
 
 @SuppressWarnings("unused")
@@ -73,14 +75,17 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
             case WORKING:
                 value = 0;
                 state = SPINNING;
+                // fallthrough
 
             case SPINNING:
                 if (++value <= maxSpins) {
+                    Util.onSpinWait();
                     break;
                 }
 
                 value = 0;
                 state = YIELDING;
+                // fallthrough
 
             case YIELDING:
                 if (++value <= maxYields) {
@@ -90,6 +95,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
 
                 value = minParkPeriodNs;
                 state = PARKING;
+                // fallthrough
 
             case PARKING:
                 LockSupport.parkNanos(value);

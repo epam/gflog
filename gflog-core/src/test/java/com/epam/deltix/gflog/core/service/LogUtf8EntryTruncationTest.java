@@ -74,6 +74,10 @@ public class LogUtf8EntryTruncationTest {
         Assert.assertEquals(">>", builder.substring());
 
         builder.clear();
+        builder.append("Привет");
+        Assert.assertEquals(">>", builder.substring());
+
+        builder.clear();
         builder.append("在");
         Assert.assertEquals(">>", builder.substring());
 
@@ -151,6 +155,10 @@ public class LogUtf8EntryTruncationTest {
         Assert.assertEquals("6>>", builder.substring());
 
         builder.clear();
+        builder.append("Привет");
+        Assert.assertEquals(">>", builder.substring());
+
+        builder.clear();
         builder.append("在");
         Assert.assertEquals(">>", builder.substring());
 
@@ -225,6 +233,10 @@ public class LogUtf8EntryTruncationTest {
         Assert.assertEquals("12>>", builder.substring());
 
         builder.clear();
+        builder.append("Привет");
+        Assert.assertEquals("П>>", builder.substring());
+
+        builder.clear();
         builder.append("在");
         Assert.assertEquals(">>", builder.substring());
 
@@ -236,6 +248,10 @@ public class LogUtf8EntryTruncationTest {
     @Test
     public void testAppendStringWithTruncation3() {
         final LogUtf8Entry builder = new LogUtf8Entry(">>", 16, 3);
+
+        builder.clear();
+        builder.append("Привет");
+        Assert.assertEquals("П>>", builder.substring());
 
         builder.clear();
         builder.append("在");

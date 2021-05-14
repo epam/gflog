@@ -160,7 +160,7 @@ public final class PropertyUtil {
         return Duration.ofNanos(units.toNanos(duration));
     }
 
-    public static String substitute(String value, final Properties properties) {
+    public static String substitute(final String value, final Properties properties) {
         if (value.contains(SUBSTITUTION_START)) {
             final StringBuilder builder = new StringBuilder();
 
@@ -194,7 +194,7 @@ public final class PropertyUtil {
                 builder.append(value, i, length);
             }
 
-            value = builder.toString();
+            return builder.toString();
         }
 
         return value;

@@ -20,28 +20,28 @@ final class LogUtf8Entry extends LogLimitedEntry {
     }
 
     @Override
-    void appendChar(final char value) {
-        appendUtf8Char(value);
+    void doAppendChar(final char value) {
+        doAppendUtf8Char(value);
     }
 
     @Override
-    void appendString(final String value) {
-        appendUtf8String(value);
+    void doAppendString(final String value) {
+        doAppendUtf8String(value);
     }
 
     @Override
-    void appendString(final String value, final int start, final int end) {
-        appendUtf8String(value, start, end);
+    void doAppendString(final String value, final int start, final int end) {
+        doAppendUtf8String(value, start, end);
     }
 
     @Override
-    void appendCharSequence(final CharSequence value) {
-        appendUtf8CharSequence(value);
+    void doAppendCharSequence(final CharSequence value) {
+        doAppendUtf8CharSequence(value);
     }
 
     @Override
-    void appendCharSequence(final CharSequence value, final int start, final int end) {
-        appendUtf8CharSequence(value, start, end);
+    void doAppendCharSequence(final CharSequence value, final int start, final int end) {
+        doAppendUtf8CharSequence(value, start, end);
     }
 
 }

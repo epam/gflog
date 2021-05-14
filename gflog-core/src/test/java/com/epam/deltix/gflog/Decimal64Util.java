@@ -3,17 +3,18 @@ package com.epam.deltix.gflog;
 import java.io.IOException;
 
 
+@SuppressWarnings({"all"})
 public class Decimal64Util {
 
     public static final long POSITIVE_INFINITY = 0x7800_0000_0000_0000L;
     public static final long NEGATIVE_INFINITY = 0xF800_0000_0000_0000L;
-    public static final long NaN = 0x7C00_0000_0000_0000L;
+    public static final long NAN = 0x7C00_0000_0000_0000L;
 
     public static final long MAX_VALUE = 0x77FB_86F2_6FC0_FFFFL;
     public static final long MIN_VALUE = 0xF7FB_86F2_6FC0_FFFFL;
 
     public static long parse(final CharSequence value) {
-        return parse(value, 0, value.length(), 0);
+        return parse(value, 0, value.length());
     }
 
     public static String format(final long value) {
@@ -26,7 +27,7 @@ public class Decimal64Util {
     public static void appendTo(final long value, final StringBuilder builder) {
         try {
             appendTo(value, (Appendable) builder);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -68,10 +69,13 @@ public class Decimal64Util {
                 parts.exponent = 0;
 
                 parts.coefficient = value & 0xFE03_FFFF_FFFF_FFFFL;
-                if (UnsignedLong.compare(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT) > 0)
+                if (UnsignedLong.compare(value & 0x0003_FFFF_FFFF_FFFFL, MAX_COEFFICIENT) > 0) {
                     parts.coefficient = value & ~MASK_COEFFICIENT;
-                if (isInfinity(value))
+                }
+
+                if (isInfinity(value)) {
                     parts.coefficient = value & MASK_SIGN_INFINITY_NAN; // TODO: Why this was done??
+                }
                 return 0;
             }
 
@@ -103,26 +107,26 @@ public class Decimal64Util {
         public final Decimal64Parts x = new Decimal64Parts();
     }
 
-    private final static ThreadLocal<Context> contextMap = new ThreadLocal<Context>() {
-        @Override
-        protected Context initialValue() {
-            return new Context();
-        }
-    };
+    private static final ThreadLocal<Context> CONTEXT_MAP = ThreadLocal.withInitial(Context::new);
 
     private static Appendable appendTo(final long value, final Appendable appendable) throws IOException {
-        final Context context = contextMap.get();
+        final Context context = CONTEXT_MAP.get();
         if (toParts(value, context.x) == 0) {
             // Value is ether Inf, or NaN, or 0.
-            if (isNaN(value))
+            if (isNaN(value)) {
                 return appendable.append("NaN");
-            if (!isInfinity(value))
+            }
+
+            if (!isInfinity(value)) {
                 return appendable.append('0');
+            }
+
             return context.x.sign ? appendable.append("-Infinity") : appendable.append("Infinity");
         }
 
-        if (context.x.sign)
+        if (context.x.sign) {
             appendable.append('-');
+        }
 
         final int exponent = context.x.exponent - EXPONENT_BIAS;
         final long coefficient = context.x.coefficient;
@@ -130,22 +134,28 @@ public class Decimal64Util {
 
         if (exponent >= 0) {
             appendLongTo(coefficient, appendable, digits);
-            for (int i = 0; i < exponent; i += 1)
+            for (int i = 0; i < exponent; i += 1) {
                 appendable.append('0');
+            }
         } else if (digits + exponent > 0) {
             final long integralPart = coefficient / POWERS_OF_TEN[-exponent];
             final long fractionalPart = coefficient % POWERS_OF_TEN[-exponent];
             appendLongTo(integralPart, appendable);
+
             if (fractionalPart != 0L) {
                 appendable.append('.');
-                for (int i = numberOfDigits(fractionalPart); i < -exponent; i += 1)
+
+                for (int i = numberOfDigits(fractionalPart); i < -exponent; i += 1) {
                     appendable.append('0');
+                }
+
                 appendLongTo(dropTrailingZeros(fractionalPart), appendable);
             }
         } else {
             appendable.append("0.");
-            for (int i = digits + exponent; i < 0; i += 1)
+            for (int i = digits + exponent; i < 0; i += 1) {
                 appendable.append('0');
+            }
             appendLongTo(dropTrailingZeros(coefficient), appendable);
         }
 
@@ -157,8 +167,9 @@ public class Decimal64Util {
         while (value != 0) {
             final long quotient = value / 10;
             final long remainder = value - (quotient << 3) - (quotient << 1);
-            if (remainder != 0)
+            if (remainder != 0) {
                 return value;
+            }
             value = quotient;
         }
         return value;
@@ -180,17 +191,6 @@ public class Decimal64Util {
 
         assert 0 <= value && value <= 9;
         return appendable.append(DECIMAL_DIGITS[(int) value]);
-    }
-
-    static String toDebugString(final long value) {
-
-        Decimal64Parts parts = new Decimal64Parts();
-        toParts(value, parts);
-        StringBuilder sb = new StringBuilder(64)
-                .append("0x").append(Long.toHexString(value))
-                .append("[").append(parts.sign ? '-' : '+').append(',')
-                .append(parts.exponent).append(',').append(parts.coefficient).append(']');
-        return sb.toString();
     }
 
     private static final char[] DECIMAL_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -224,9 +224,12 @@ public class Decimal64Util {
      * @return Number of digits required.
      */
     private static int numberOfDigits(final long value) {
-        for (int i = 1; i < POWERS_OF_TEN.length; i += 1)
-            if (value < POWERS_OF_TEN[i])
+        for (int i = 1; i < POWERS_OF_TEN.length; i += 1) {
+            if (value < POWERS_OF_TEN[i]) {
                 return i;
+            }
+        }
+
         return 19;
     }
 
@@ -239,7 +242,6 @@ public class Decimal64Util {
 
     static final int EXPONENT_BIAS = 398;
     static final int BIASED_EXPONENT_MAX_VALUE = 767;
-    static final int BIASED_EXPONENT_MIN_VALUE = 0;
 
     static final long LARGE_COEFFICIENT_MASK = 0x0007_FFFF_FFFF_FFFFL;
     static final long LARGE_COEFFICIENT_HIGH_BIT = 0x0020_0000_0000_0000L;
@@ -250,41 +252,25 @@ public class Decimal64Util {
     static final int EXPONENT_MASK = 0x03FF;
     static final int EXPONENT_SHIFT_LARGE = 51;
     static final int EXPONENT_SHIFT_SMALL = 53;
-    static final long EXPONENT_MASK_SMALL = (long) EXPONENT_MASK << EXPONENT_SHIFT_SMALL;
-    static final long EXPONENT_MASK_LARGE = (long) EXPONENT_MASK << EXPONENT_SHIFT_LARGE;
 
     private static final int MAX_FORMAT_DIGITS = 16;
-
-    static final long MASK_STEERING_BITS = 0x6000_0000_0000_0000L;
-    private static final long MASK_BINARY_EXPONENT1 = 0x7FE0_0000_0000_0000L;
-    private static final long MASK_BINARY_SIG1 = 0x001F_FFFF_FFFF_FFFFL;
-    private static final long MASK_BINARY_EXPONENT2 = 0x1FF8_0000_0000_0000L;
-    // Used to take G[2:w+3] (sec 3.3)
-    private static final long MASK_BINARY_SIG2 = 0x0007_FFFF_FFFF_FFFFL;
-    // Used to mask out G4:T0 (sec 3.3)
-    private static final long MASK_BINARY_OR2 = 0x0020_0000_0000_0000L;
-    // Used to prefix 8+G4 to T (sec 3.3)
-    private static final int UPPER_EXPON_LIMIT = 51;
-    private static final long MASK_EXP = 0x7FFE_0000_0000_0000L;
-    private static final long MASK_EXP2 = 0x1FFF_8000_0000_0000L;
-
-    private static final long MASK_SNAN = 0x7E00_0000_0000_0000L;
-    private static final long MASK_ANY_INF = 0x7C00_0000_0000_0000L;
 
     private static NumberFormatException invalidFormat(final CharSequence s, final int si, final int ei) {
         return new NumberFormatException(s.subSequence(si, ei).toString());
     }
 
-    private static long parse(final CharSequence s, final int si, final int ei, int roundingMode) {
+    private static long parse(final CharSequence s, final int si, final int ei) {
         char c;
         int p = si;
         boolean sign = false;
 
         c = s.charAt(p);
+
         if (c == '+') {
             p += 1;
             c = p < ei ? s.charAt(p) : 0;
         }
+
         if (c == '-') {
             sign = true;
 
@@ -294,11 +280,14 @@ public class Decimal64Util {
 
         if (c != '.' && (c < '0' || c > '9')) {
             if (TextUtils.equalsIgnoringCase(s, p, ei, "Infinity") ||
-                    TextUtils.equalsIgnoringCase(s, p, ei, "Inf"))
+                    TextUtils.equalsIgnoringCase(s, p, ei, "Inf")) {
                 return sign ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+            }
+
             if (TextUtils.equalsIgnoringCase(s, p, ei, "NaN") ||
-                    TextUtils.equalsIgnoringCase(s, p, ei, "SNaN"))
-                return NaN;
+                    TextUtils.equalsIgnoringCase(s, p, ei, "SNaN")) {
+                return NAN;
+            }
             throw invalidFormat(s, si, ei);
         }
 
@@ -317,18 +306,22 @@ public class Decimal64Util {
                 p += 1;
                 c = p < ei ? s.charAt(p) : 0;
 
-                if (seenRadixPoint)
+                if (seenRadixPoint) {
                     leadingZerosAfterPoint += 1;
+                }
 
                 if (c == '.') {
-                    if (seenRadixPoint)
+                    if (seenRadixPoint) {
                         throw invalidFormat(s, si, ei);
+                    }
+
                     seenRadixPoint = true;
 
                     p += 1;
                     c = p < ei ? s.charAt(p) : 0;
-                    if (c == 0)
+                    if (c == 0) {
                         return makeZero(sign, EXPONENT_BIAS - leadingZerosAfterPoint);
+                    }
                 } else if (c == 0) {
                     return makeZero(sign, EXPONENT_BIAS - leadingZerosAfterPoint);
                 }
@@ -343,8 +336,9 @@ public class Decimal64Util {
 
         while ((c >= '0' && c <= '9') || c == '.') {
             if (c == '.') {
-                if (seenRadixPoint)
+                if (seenRadixPoint) {
                     throw invalidFormat(s, si, ei);
+                }
 
                 seenRadixPoint = true;
 
@@ -354,49 +348,27 @@ public class Decimal64Util {
                 continue;
             }
 
-            if (seenRadixPoint)
+            if (seenRadixPoint) {
                 decimalExponentScale += 1;
+            }
 
             numberOfDigits += 1;
             if (numberOfDigits <= 16) {
                 coefficient = (coefficient << 1) + (coefficient << 3) + c - '0';
             } else if (numberOfDigits == 17) {
-                switch (roundingMode) {
-                    case BID_ROUNDING_TO_NEAREST:
-                        midpoint = (c == '5' && (coefficient & 1) == 0);
-                        if (c > '5' || (c == '5' && (coefficient & 1) != 0)) {
-                            coefficient += 1;
-                            roundedUp = true;
-                        }
-                        break;
-
-                    case BID_ROUNDING_DOWN:
-                        if (sign) {
-                            coefficient += 1;
-                            roundedUp = true;
-                        }
-                        break;
-
-                    case BID_ROUNDING_UP:
-                        if (!sign) {
-                            coefficient += 1;
-                            roundedUp = true;
-                        }
-                        break;
-
-                    case BID_ROUNDING_TIES_AWAY:
-                        if (c >= '5') {
-                            coefficient += 1;
-                            roundedUp = true;
-                        }
-                        break;
+                midpoint = (c == '5' && (coefficient & 1) == 0);
+                if (c > '5' || (c == '5' && (coefficient & 1) != 0)) {
+                    coefficient += 1;
+                    roundedUp = true;
                 }
+
                 if (coefficient == 10000000000000000L) {
                     coefficient = 1000000000000000L;
                     additionalExponent = 1;
                 }
-                if (c > '0')
+                if (c > '0') {
                     rounded = true;
+                }
                 additionalExponent += 1;
             } else {
                 additionalExponent += 1;
@@ -405,8 +377,9 @@ public class Decimal64Util {
                     midpoint = false;
                     roundedUp = true;
                 }
-                if (c >= '0')
+                if (c >= '0') {
                     rounded = true;
+                }
             }
 
             p += 1;
@@ -430,8 +403,9 @@ public class Decimal64Util {
             c = p < ei ? s.charAt(p) : 0;
         }
 
-        if (c == 0 || c < '0' || c > '9')
+        if (c == 0 || c < '0' || c > '9') {
             throw invalidFormat(s, si, ei);
+        }
 
         int exponent = 0;
         while (c >= '0' && c <= '9') {
@@ -913,8 +887,9 @@ public class Decimal64Util {
                 return sgn | _C64;
             }
             if (coefficient == 0L) {
-                if (exponent > BIASED_EXPONENT_MAX_VALUE)
+                if (exponent > BIASED_EXPONENT_MAX_VALUE) {
                     exponent = BIASED_EXPONENT_MAX_VALUE;
+                }
             }
             while (UnsignedLong.compare(coefficient, 1000000000000000L) < 0 && exponent >= 3 * 256) {
                 exponent--;
@@ -925,8 +900,9 @@ public class Decimal64Util {
                 r = sgn | MASK_INFINITY_AND_NAN;
                 switch (roundingMode) {
                     case BID_ROUNDING_DOWN:
-                        if (!isSigned)
+                        if (!isSigned) {
                             r = MAX_VALUE;
+                        }
                         break;
 
                     case BID_ROUNDING_TO_ZERO:
@@ -934,8 +910,9 @@ public class Decimal64Util {
                         break;
 
                     case BID_ROUNDING_UP:
-                        if (isSigned)
+                        if (isSigned) {
                             r = MIN_VALUE;
+                        }
                 }
                 return r;
             }
@@ -977,13 +954,20 @@ public class Decimal64Util {
     private static class TextUtils {
         public static boolean equalsIgnoringCase(final CharSequence s1, final int s1si, final int s1ei,
                                                  final CharSequence s2) {
-            if (s1ei < s1si)
+            if (s1ei < s1si) {
                 throw new IllegalArgumentException("End index is expected to be greater or equal to start index.");
-            if (s2.length() != s1ei - s1si)
+            }
+
+            if (s2.length() != s1ei - s1si) {
                 return false;
-            for (int i2 = 0, i1 = s1si; i2 < s1.length() && i1 < s1ei; i2 += 1, i1 += 1)
-                if (Character.toLowerCase(s1.charAt(i1)) != Character.toLowerCase(s2.charAt(i2)))
+            }
+
+            for (int i2 = 0, i1 = s1si; i2 < s1.length() && i1 < s1ei; i2 += 1, i1 += 1) {
+                if (Character.toLowerCase(s1.charAt(i1)) != Character.toLowerCase(s2.charAt(i2))) {
                     return false;
+                }
+            }
+
             return true;
         }
     }

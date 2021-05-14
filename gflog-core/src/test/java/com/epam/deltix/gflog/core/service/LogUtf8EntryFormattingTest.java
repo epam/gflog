@@ -126,7 +126,7 @@ public class LogUtf8EntryFormattingTest {
 
     @Test
     public void testDecimal64() {
-        verifyDecimal64(Decimal64Util.NaN);
+        verifyDecimal64(Decimal64Util.NAN);
         verifyDecimal64(Decimal64Util.NEGATIVE_INFINITY);
         verifyDecimal64(Decimal64Util.POSITIVE_INFINITY);
 
@@ -134,6 +134,15 @@ public class LogUtf8EntryFormattingTest {
             final long decimal64 = TestUtil.randomDecimal64();
             verifyDecimal64(decimal64);
         }
+    }
+
+    @Test
+    public void testCyclicException() {
+        final RuntimeException one = new RuntimeException();
+        final RuntimeException two = new RuntimeException(one);
+
+        one.initCause(two);
+        entry.append(one);
     }
 
     private void verifyDecimal64(long decimal64) {

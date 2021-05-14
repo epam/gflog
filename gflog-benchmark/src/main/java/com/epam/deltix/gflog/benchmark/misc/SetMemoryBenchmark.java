@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark.util;
+package com.epam.deltix.gflog.benchmark.misc;
 
 import com.epam.deltix.gflog.core.util.Util;
 import org.openjdk.jmh.annotations.*;
@@ -13,7 +13,7 @@ import static com.epam.deltix.gflog.core.util.Util.UNSAFE;
 
 
 @Warmup(iterations = 3, time = 5)
-@Measurement(iterations = 5, time = 5)
+@Measurement(iterations = 5, time = 10)
 @Fork(1)
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -22,6 +22,7 @@ public class SetMemoryBenchmark {
 
     private static final int SIZE = 128 * 1024;
     private static final int WORDS = SIZE / 8;
+    private static final int STEP = 64;
 
     private final long address = (Util.UNSAFE.allocateMemory(SIZE + 7) + 7) & (~7);
 
@@ -46,6 +47,34 @@ public class SetMemoryBenchmark {
     public void setMemory3() {
         for (int i = 0; i < WORDS; i++) {
             UNSAFE.putLong(address + (i << 3), 0);
+        }
+    }
+
+    @Benchmark
+    public void setMemoryForwardLongWithStep() {
+        for (int i = 0; i < SIZE; i += STEP) {
+            UNSAFE.putLong(address + i, 0);
+        }
+    }
+
+    @Benchmark
+    public void setMemoryBackwardLongWithStep() {
+        for (int i = SIZE - STEP; i >= 0; i -= STEP) {
+            UNSAFE.putLong(address + i, 0);
+        }
+    }
+
+    @Benchmark
+    public void setMemoryForwardIntWithStep() {
+        for (int i = 0; i < SIZE; i += STEP) {
+            UNSAFE.putInt(address + i, 0);
+        }
+    }
+
+    @Benchmark
+    public void setMemoryBackwardIntWithStep() {
+        for (int i = SIZE - STEP; i >= 0; i -= STEP) {
+            UNSAFE.putInt(address + i, 0);
         }
     }
 

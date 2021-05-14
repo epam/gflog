@@ -45,8 +45,6 @@ public final class LogConfigFactory {
     public static final String CONFIG = PropertyUtil.getString("gflog.config", null);
     public static final String CONFIG_SCHEMA = PropertyUtil.getString("gflog.config.schema", "gflog.xsd");
 
-    @Deprecated
-    public static final boolean CONFIG_VALIDATE = true;
     public static final boolean CONFIG_CLASSPATH_SEARCH = PropertyUtil.getBoolean("gflog.config.classpath.search", true);
     private static final String[] CONFIG_CLASSPATH_FILES = {"gflog-test.xml", "gflog.xml"};
 
@@ -128,20 +126,27 @@ public final class LogConfigFactory {
     }
 
     /**
-     * Loads a config from a classpath if a url prefixed with "classpath:".
-     * Otherwise loads the config from file if the url prefixed with "file:" or not prefixed.
-     * <p>
+     * Loads a config from the classpath if the url prefixed with "classpath:".
+     * Otherwise loads a config from file if the url prefixed with "file:" or not prefixed.
      * Uses the system properties for substitutions.
+     *
+     * @param url to load from.
+     * @return the log config.
+     * @throws Exception if failed to load.
      */
     public static LogConfig load(final String url) throws Exception {
         return load(url, System.getProperties());
     }
 
     /**
-     * Loads a config from a classpath if a url prefixed with "classpath:".
-     * Otherwise loads the config from file if the url prefixed with "file:" or not prefixed.
-     * <p>
-     * Uses properties for substitutions.
+     * Loads a config from the classpath if the url prefixed with "classpath:".
+     * Otherwise loads a config from file if the url prefixed with "file:" or not prefixed.
+     * Uses the specified properties for substitutions.
+     *
+     * @param url        to load from.
+     * @param properties to use for substitutions.
+     * @return the log config.
+     * @throws Exception if failed.
      */
     public static LogConfig load(final String url, final Properties properties) throws Exception {
         final InputStream stream;
@@ -165,25 +170,23 @@ public final class LogConfigFactory {
     }
 
     /**
-     * Loads a config from a classpath if a url prefixed with "classpath:".
-     * Otherwise loads a config from a file if the url prefixed with "file:" or not prefixed.
-     * <p>
-     * Uses properties for substitutions.
-     */
-    @Deprecated
-    public static LogConfig load(final String url, final Properties properties, final boolean validate) throws Exception {
-        return load(url, properties);
-    }
-
-    /**
-     * Loads a config from a file. Uses the system properties for substitutions.
+     * Loads a config from the file. Uses the system properties for substitutions.
+     *
+     * @param file to load from.
+     * @return the log config.
+     * @throws Exception if failed.
      */
     public static LogConfig load(final File file) throws Exception {
         return load(file, System.getProperties());
     }
 
     /**
-     * Loads a config from a file. Uses properties for substitutions.
+     * Loads a config from the file. Uses the specified properties for substitutions.
+     *
+     * @param file       to load from.
+     * @param properties to use for substitutions.
+     * @return the log config.
+     * @throws Exception if failed.
      */
     public static LogConfig load(final File file, final Properties properties) throws Exception {
         try (final InputStream stream = new FileInputStream(file)) {
@@ -192,22 +195,23 @@ public final class LogConfigFactory {
     }
 
     /**
-     * Loads a config from a file. Uses properties for substitutions.
-     */
-    @Deprecated
-    public static LogConfig load(final File file, final Properties properties, final boolean validate) throws Exception {
-        return load(file, properties);
-    }
-
-    /**
-     * Loads a config from an input stream. Uses the system properties for substitutions.
+     * Loads a config from the input stream. Uses the system properties for substitutions.
+     *
+     * @param stream to load from.
+     * @return the log config.
+     * @throws Exception if failed.
      */
     public static LogConfig load(final InputStream stream) throws Exception {
         return load(stream, System.getProperties());
     }
 
     /**
-     * Loads a config from an input stream. Uses properties for substitutions.
+     * Loads a config from the input stream. Uses the specified properties for substitutions.
+     *
+     * @param stream     to load from.
+     * @param properties to use for substitutions.
+     * @return the log config.
+     * @throws Exception if failed.
      */
     public static LogConfig load(final InputStream stream, final Properties properties) throws Exception {
         try (final InputStream substitution = substitute(stream, properties)) {
@@ -224,14 +228,6 @@ public final class LogConfigFactory {
             final Document document = builder.parse(substitution);
             return getConfig(document);
         }
-    }
-
-    /**
-     * Loads a config from an input stream. Uses properties for substitutions.
-     */
-    @Deprecated
-    public static LogConfig load(final InputStream stream, final Properties properties, final boolean validate) throws Exception {
-        return load(stream, properties);
     }
 
     private static InputStream substitute(final InputStream stream, final Properties properties) throws Exception {

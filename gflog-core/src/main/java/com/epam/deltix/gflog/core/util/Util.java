@@ -2,12 +2,16 @@ package com.epam.deltix.gflog.core.util;
 
 import sun.misc.Unsafe;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
+
+import static java.lang.invoke.MethodType.methodType;
 
 
 public final class Util {
@@ -54,6 +58,20 @@ public final class Util {
     public static final boolean BOUNDS_CHECK_ENABLED = PropertyUtil.getBoolean("gflog.bounds.check", true);
 
     public static final String LINE_SEPARATOR = System.lineSeparator();
+
+    private static final MethodHandle ON_SPIN_WAIT_METHOD_HANDLE;
+
+    static {
+        MethodHandle methodHandle = null;
+
+        try {
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+            methodHandle = lookup.findStatic(Thread.class, "onSpinWait", methodType(void.class));
+        } catch (final Exception ignore) {
+        }
+
+        ON_SPIN_WAIT_METHOD_HANDLE = methodHandle;
+    }
 
     private Util() {
     }
@@ -127,7 +145,11 @@ public final class Util {
     }
 
     /**
-     * Makes the platform dependent short.
+     * Makes the platform dependent short for the native byte order.
+     *
+     * @param b1 1 of 1|0.
+     * @param b0 0 of 1|0.
+     * @return the short value.
      */
     public static short makeShort(final int b1, final int b0) {
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
@@ -136,16 +158,13 @@ public final class Util {
     }
 
     /**
-     * Makes the short depending on the platform.
-     */
-    public static short makeShort(final int b1, final int b0, final ByteOrder byteOrder) {
-        return (byteOrder == ByteOrder.LITTLE_ENDIAN) ?
-                (short) ((b0 << 8) | (b1)) :
-                (short) ((b1 << 8) | (b0));
-    }
-
-    /**
-     * Makes the platform dependent int.
+     * Makes the platform dependent int for the native byte order.
+     *
+     * @param b3 3 of 3|2|1|0.
+     * @param b2 2 of 3|2|1|0.
+     * @param b1 1 of 3|2|1|0.
+     * @param b0 0 of 3|2|1|0.
+     * @return the int value.
      */
     public static int makeInt(final int b3, final int b2, final int b1, final int b0) {
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
@@ -154,14 +173,24 @@ public final class Util {
     }
 
     /**
-     * Makes the platform dependent long.
+     * Makes the platform dependent int for the native byte order.
+     *
+     * @param b7 7 of 7|6|5|4|3|2|1|0.
+     * @param b6 6 of 7|6|5|4|3|2|1|0.
+     * @param b5 5 of 7|6|5|4|3|2|1|0.
+     * @param b4 4 of 7|6|5|4|3|2|1|0.
+     * @param b3 3 of 7|6|5|4|3|2|1|0.
+     * @param b2 2 of 7|6|5|4|3|2|1|0.
+     * @param b1 1 of 7|6|5|4|3|2|1|0.
+     * @param b0 0 of 7|6|5|4|3|2|1|0.
+     * @return the long value.
      */
-    public static long makeLong(final int b7, final int b6, final int b5, final int b4,
-                                final int b3, final int b2, final int b1, final int b0) {
+    public static long makeLong(final long b7, final long b6, final long b5, final long b4,
+                                final long b3, final long b2, final long b1, final long b0) {
 
         return (NATIVE_BYTE_ORDER == ByteOrder.LITTLE_ENDIAN) ?
-                (((long) b0 << 56) | ((long) b1 << 48) | ((long) b2 << 40) | ((long) b3 << 32) | ((long) b4 << 24) | (b5 << 16) | (b6 << 8) | b7) :
-                (((long) b7 << 56) | ((long) b6 << 48) | ((long) b5 << 40) | ((long) b4 << 32) | ((long) b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
+                ((b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | b7) :
+                ((b7 << 56) | (b6 << 48) | (b5 << 40) | (b4 << 32) | (b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
     }
 
     public static int codePointAt(final CharSequence sequence, final int index, final int end) {
@@ -179,7 +208,7 @@ public final class Util {
         return Character.toCodePoint(c1, c2);
     }
 
-    public static int findUtf8Bound(final CharSequence value, int start, final int end, int limit) {
+    public static int limitUtf8Index(final CharSequence value, int start, final int end, int limit) {
         while (start < end) {
             final char c = value.charAt(start);
             boolean surrogate = false;
@@ -213,6 +242,37 @@ public final class Util {
         }
 
         return start;
+    }
+
+    public static int limitUtf8Length(final Buffer bytes, final int offset, final int length, final int limit) {
+        if (length <= limit) {
+            return length;
+        }
+
+        int result = limit;
+
+        while (result > 0) {
+            final int b = bytes.getByte(offset + result - 1);
+
+            if (b >= 0) {
+                break;
+            }
+
+            --result;
+
+            if ((b & 0b11000000) == 0b11000000) {
+                final int size = ((b & 0b11100000) == 0b11000000) ? 2 :
+                        ((b & 0b11110000) == 0b11100000) ? 3 : 4;
+
+                if (limit - result >= size) {
+                    result = limit;
+                }
+
+                break;
+            }
+        }
+
+        return result;
     }
 
     public static UnsafeBuffer fromUtf8String(final String string) {
@@ -249,6 +309,16 @@ public final class Util {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
+    public static void onSpinWait() {
+        if (ON_SPIN_WAIT_METHOD_HANDLE != null) {
+            try {
+                ON_SPIN_WAIT_METHOD_HANDLE.invokeExact();
+            } catch (final Throwable ignore) {
+                // ignore
+            }
+        }
+    }
+
     /**
      * Allocate a new direct {@link ByteBuffer} that is aligned on a given alignment boundary.
      *
@@ -282,9 +352,8 @@ public final class Util {
      * @param alignment for the buffer.
      * @return the direct {@link ByteBuffer}.
      */
-    static ByteBuffer allocateDirectAlignedAndPadded(final int capacity, final int alignment) {
+    static ByteBuffer allocateDirectAlignedPadded(final int capacity, final int alignment) {
         final ByteBuffer buffer = allocateDirectAligned(capacity + alignment, alignment);
-
         buffer.limit(buffer.limit() - alignment);
 
         return buffer.slice();

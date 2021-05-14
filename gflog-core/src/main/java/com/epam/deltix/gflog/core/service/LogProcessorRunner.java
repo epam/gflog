@@ -55,27 +55,23 @@ final class LogProcessorRunner implements Runnable, AutoCloseable {
 
     @Override
     public void close() {
-        try {
-            int attempts = 0;
-            signalToClose();
+        int attempts = 0;
+        signalToClose();
 
-            while (!awaitClose()) {
-                if (++attempts < CLOSE_ATTEMPTS) {
-                    LogDebug.warn("can't stop gflog thread: " + thread + ". Attempt: " + attempts + ". Awaiting...");
-                } else {
-                    final StackTraceElement[] stackTrace = thread.getStackTrace();
+        while (!awaitClose()) {
+            if (++attempts < CLOSE_ATTEMPTS) {
+                LogDebug.warn("can't stop gflog thread: " + thread + ". Attempt: " + attempts + ". Awaiting...");
+            } else {
+                final StackTraceElement[] stackTrace = thread.getStackTrace();
 
-                    final Exception cause = new Exception("Thread: " + thread);
-                    cause.setStackTrace(stackTrace);
+                final Exception cause = new Exception("Thread: " + thread);
+                cause.setStackTrace(stackTrace);
 
-                    final Throwable exception = new TimeoutException("can't stop thread: " + thread)
-                            .initCause(cause);
+                final Throwable exception = new TimeoutException("can't stop thread: " + thread)
+                        .initCause(cause);
 
-                    LogDebug.warn("can't stop gflog thread: " + thread + ". Attempt: " + attempts + ". Stack: ", exception);
-                }
+                LogDebug.warn("can't stop gflog thread: " + thread + ". Attempt: " + attempts + ". Stack: ", exception);
             }
-        } catch (final Throwable e) {
-            Util.rethrow(e);
         }
     }
 

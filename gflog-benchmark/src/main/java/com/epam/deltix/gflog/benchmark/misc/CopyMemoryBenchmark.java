@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark.util;
+package com.epam.deltix.gflog.benchmark.misc;
 
 import com.epam.deltix.gflog.core.util.Util;
 import org.openjdk.jmh.annotations.*;

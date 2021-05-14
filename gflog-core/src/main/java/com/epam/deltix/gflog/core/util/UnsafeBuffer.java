@@ -381,8 +381,8 @@ public final class UnsafeBuffer implements MutableBuffer {
         return new UnsafeBuffer(Util.allocateDirectAligned(capacity, alignment));
     }
 
-    public static UnsafeBuffer allocateDirectedAlignedAndPadded(final int capacity, final int alignment) {
-        return new UnsafeBuffer(Util.allocateDirectAlignedAndPadded(capacity, alignment));
+    public static UnsafeBuffer allocateDirectedAlignedPadded(final int capacity, final int alignment) {
+        return new UnsafeBuffer(Util.allocateDirectAlignedPadded(capacity, alignment));
     }
 
 }

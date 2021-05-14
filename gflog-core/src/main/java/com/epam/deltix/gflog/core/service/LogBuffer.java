@@ -10,8 +10,10 @@ import static com.epam.deltix.gflog.core.util.Util.UNSAFE;
 
 final class LogBuffer {
 
-    private static final int MIN_CAPACITY = 64 * 1024;
-    private static final int MAX_CAPACITY = 1024 * 1024 * 1024;
+    static final int MIN_CAPACITY = 64 * 1024;
+    static final int MAX_CAPACITY = 1024 * 1024 * 1024;
+
+    private static final int MAX_READ_LENGTH = 64 * 1024;
 
     private static final int TAIL_OFFSET = Util.DOUBLE_CACHE_LINE_SIZE - Util.SIZE_OF_LONG;
     private static final int HEAD_OFFSET = TAIL_OFFSET + Util.DOUBLE_CACHE_LINE_SIZE;
@@ -31,10 +33,10 @@ final class LogBuffer {
     private final long headAddress;
     private final long headCacheAddress;
 
-    LogBuffer(int capacity) {
-        capacity = findCapacity(capacity);
+    LogBuffer(final int capacity) {
+        verify(capacity);
 
-        final UnsafeBuffer buffer = UnsafeBuffer.allocateDirectAligned(capacity + TRAILER_LENGTH, Util.DOUBLE_CACHE_LINE_SIZE);
+        final UnsafeBuffer buffer = UnsafeBuffer.allocateDirectedAlignedPadded(capacity + TRAILER_LENGTH, Util.DOUBLE_CACHE_LINE_SIZE);
         buffer.wrap(buffer, 0, capacity);
 
         final long dataAddress = buffer.address();
@@ -67,33 +69,23 @@ final class LogBuffer {
         return dataAddress;
     }
 
-    public int size() {
-        final long head = UNSAFE.getLongVolatile(null, headAddress);
-        final long tail = UNSAFE.getLongVolatile(null, tailAddress);
+    // region Producers
 
-        return (int) (tail - head);
-    }
-
-    public boolean isEmpty() {
-        final long head = UNSAFE.getLongVolatile(null, headAddress);
-        final long tail = UNSAFE.getLongVolatile(null, tailAddress);
-
-        return tail == head;
-    }
-
-    public int claim(final int length) {
-        final int aligned = Util.align(length, LogRecordEncoder.ALIGNMENT);
-
+    public int tryClaim(final int length) {
+        final int required = Util.align(length, LogRecordEncoder.ALIGNMENT);
         long head = UNSAFE.getLongVolatile(null, headCacheAddress);
-        long tail;
-        long tailNext;
 
         int offset;
         int padding;
 
-        do {
-            tail = UNSAFE.getLongVolatile(null, tailAddress);
-            tailNext = tail + aligned;
+        while (true) {
+            final long tail = UNSAFE.getLongVolatile(null, tailAddress);
+            offset = (int) tail & mask;
+
+            final int continuous = capacity - offset;
+
+            padding = (required > continuous) ? continuous : 0;
+            final long tailNext = tail + required + padding;
 
             if (tailNext - head > capacity) {
                 head = UNSAFE.getLongVolatile(null, headAddress);
@@ -105,28 +97,10 @@ final class LogBuffer {
                 UNSAFE.putOrderedLong(null, headCacheAddress, head);
             }
 
-            padding = 0;
-            offset = (int) tail & mask;
-
-            final int continuous = capacity - offset;
-
-            if (aligned > continuous) {
-                tailNext += continuous;
-
-                if (tailNext - head > capacity) {
-                    head = UNSAFE.getLongVolatile(null, headAddress);
-
-                    if (tailNext - head > capacity) {
-                        return INSUFFICIENT_SPACE;
-                    }
-
-                    UNSAFE.putOrderedLong(null, headCacheAddress, head);
-                }
-
-                padding = continuous;
+            if (UNSAFE.compareAndSwapLong(null, tailAddress, tail, tailNext)) {
+                break;
             }
-
-        } while (!UNSAFE.compareAndSwapLong(null, tailAddress, tail, tailNext));
+        }
 
         if (padding != 0) {
             UNSAFE.putOrderedInt(null, dataAddress + offset, -padding);
@@ -134,6 +108,39 @@ final class LogBuffer {
         }
 
         return offset;
+    }
+
+    public int claim(final int length, final BackpressureCallback callback) {
+        final int required = Util.align(length, LogRecordEncoder.ALIGNMENT);
+
+        while (true) {
+            final long tail = UNSAFE.getAndAddLong(null, tailAddress, required);
+            final long tailNext = tail + required;
+
+            final int offset = (int) tail & mask;
+            final int continuous = capacity - offset;
+
+            long head = UNSAFE.getLongVolatile(null, headCacheAddress);
+
+            if (tailNext - head > capacity) {
+                head = UNSAFE.getLongVolatile(null, headAddress);
+
+                while (tailNext - head > capacity) {
+                    callback.onBackpressure();
+                    head = UNSAFE.getLongVolatile(null, headAddress);
+                }
+
+                UNSAFE.putOrderedLong(null, headCacheAddress, head);
+            }
+
+            if (required > continuous) {
+                UNSAFE.putOrderedInt(null, dataAddress + offset, -continuous);
+                UNSAFE.putOrderedInt(null, dataAddress, continuous - required);
+                continue;
+            }
+
+            return offset;
+        }
     }
 
     public void commit(final int offset, final int length) {
@@ -145,11 +152,15 @@ final class LogBuffer {
         UNSAFE.putOrderedInt(null, dataAddress + offset, -padding);
     }
 
+    // endregion
+
+    // region Consumer
+
     public int read(final RecordHandler handler) {
         final long head = UNSAFE.getLong(headAddress);
 
         final int index = (int) head & mask;
-        final int limit = Math.min(maxRecordLength, capacity - index);
+        final int limit = Math.min(capacity - index, MAX_READ_LENGTH);
 
         int read = 0;
 
@@ -181,16 +192,38 @@ final class LogBuffer {
         return read;
     }
 
-    private static int findCapacity(final int capacity) {
+    public void unblock() {
+        final long head = UNSAFE.getLong(null, headAddress);
+        UNSAFE.putOrderedLong(null, headAddress, head + (1L << 60));
+    }
+
+    public boolean isEmpty() {
+        final long head = UNSAFE.getLong(headAddress);
+        final long tail = UNSAFE.getLongVolatile(null, tailAddress);
+
+        return tail == head;
+    }
+
+    // endregion
+
+    private static void verify(final int capacity) {
         if (capacity < MIN_CAPACITY) {
-            return MIN_CAPACITY;
+            throw new IllegalArgumentException("buffer capacity: " + capacity + " is less than min: " + MIN_CAPACITY);
         }
 
         if (capacity > MAX_CAPACITY) {
-            return MAX_CAPACITY;
+            throw new IllegalArgumentException("buffer capacity: " + capacity + " is more than max: " + MAX_CAPACITY);
         }
 
-        return Util.nextPowerOfTwo(capacity);
+        if (!Util.isPowerOfTwo(capacity)) {
+            throw new IllegalArgumentException("buffer capacity: " + capacity + " is not power of two");
+        }
+    }
+
+    public interface BackpressureCallback {
+
+        void onBackpressure();
+
     }
 
     public interface RecordHandler {

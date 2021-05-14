@@ -96,12 +96,9 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
         recordSizes.add(offset - before);
     }
 
-    /**
-     * Removes the oldest entries and shifts rest of entries to the left if the free space in buffer is not enough for the new record
-     */
     private void clearBufferIfNeeded(final LogRecord record) {
         final int size = layout.size(record);
-        int remaining = capacity - offset;
+        final int remaining = capacity - offset;
 
         if (remaining < size) {
             verifyRecordSize(size);
@@ -121,13 +118,13 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
     }
 
     // garbage
-    private static void sendMessage(ByteBuffer body, LogRecord record, SmtpSettings settings) {
-        Properties props = new Properties(System.getProperties());
+    private static void sendMessage(final ByteBuffer body, final LogRecord record, final SmtpSettings settings) {
+        final Properties props = new Properties(System.getProperties());
 
         if (settings.getSecure() != null) {
-            if (settings.getSecure().equals("STARTTLS"))
+            if (settings.getSecure().equals("STARTTLS")) {
                 props.put("mail.smtp.starttls.enable", "true");
-            else if (settings.getSecure().equals("SSL")) {
+            } else if (settings.getSecure().equals("SSL")) {
                 props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             }
         }
@@ -149,10 +146,10 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
             props.put("mail.smtp.auth", "true");
         }
 
-        Session session = Session.getInstance(props, auth);
+        final Session session = Session.getInstance(props, auth);
         session.setDebug(settings.isDebug());
 
-        MimeMessage message = new MimeMessage(session);
+        final MimeMessage message = new MimeMessage(session);
 
         try {
             if (settings.getFrom() != null) {
@@ -164,10 +161,10 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
             message.setRecipients(Message.RecipientType.TO, parseAddress(settings.getTo()));
             message.setSubject(getSubject(settings.getSubject(), record, settings.getMaxSubjectLength()));
 
-            MimeBodyPart part = new MimeBodyPart();
+            final MimeBodyPart part = new MimeBodyPart();
             part.setDataHandler(new DataHandler(new ByteBufferDataSource(body)));
 
-            Multipart mp = new MimeMultipart();
+            final Multipart mp = new MimeMultipart();
             mp.addBodyPart(part);
             message.setContent(mp);
 
@@ -175,13 +172,13 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
 
             // do send message
             Transport.send(message);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LogDebug.warn("can't send email due to: " + ex.getMessage(), ex);
         }
     }
 
-    private static String getSubject(String prefix, LogRecord record, int maxLength) {
-        Buffer message = record.getMessage();
+    private static String getSubject(final String prefix, final LogRecord record, final int maxLength) {
+        final Buffer message = record.getMessage();
 
         int length = message.capacity();
         if (prefix != null) {
@@ -190,7 +187,7 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
 
         length = Math.min(length, maxLength);
 
-        StringBuilder builder = new StringBuilder(length);
+        final StringBuilder builder = new StringBuilder(length);
         if (prefix != null) {
             builder.append(prefix).append(SUBJECT_HYPHEN); // always entire
         }
@@ -201,7 +198,7 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
         }
 
         // use only first line in message
-        String lineSeparator = Util.LINE_SEPARATOR;
+        final String lineSeparator = Util.LINE_SEPARATOR;
         i = builder.indexOf(lineSeparator);
 
         if (i != -1) {
@@ -211,19 +208,19 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
         return builder.toString();
     }
 
-    private static InternetAddress getAddress(String address) {
+    private static InternetAddress getAddress(final String address) {
         try {
             return new InternetAddress(address);
-        } catch (AddressException e) {
+        } catch (final AddressException e) {
             LogDebug.warn("can't parse address [" + address + "].", e);
             return null;
         }
     }
 
-    private static InternetAddress[] parseAddress(String address) {
+    private static InternetAddress[] parseAddress(final String address) {
         try {
             return InternetAddress.parse(address, true);
-        } catch (AddressException e) {
+        } catch (final AddressException e) {
             LogDebug.warn("can't parse address [" + address + "].", e);
             return new InternetAddress[0];
         }
@@ -233,7 +230,7 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
 
         private final PasswordAuthentication auth;
 
-        private UsernamePasswordAuthenticator(String user, String password) {
+        private UsernamePasswordAuthenticator(final String user, final String password) {
             auth = new PasswordAuthentication(user, password);
         }
 
@@ -252,16 +249,17 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
         private long periodStartTimeMs = Long.MIN_VALUE;
         private int counter;
 
-        private Trigger(LogLevel pushLevel, int periodMs, int maxEmailCount) {
-            if (pushLevel == null)
+        private Trigger(final LogLevel pushLevel, final int periodMs, final int maxEmailCount) {
+            if (pushLevel == null) {
                 throw new NullPointerException("pushLevel is null");
+            }
 
             this.pushLevel = pushLevel;
             this.periodMs = periodMs;
             this.maxEmailCount = maxEmailCount;
         }
 
-        public boolean accept(LogRecord record) {
+        public boolean accept(final LogRecord record) {
             if (!pushLevel.isLoggable(record.getLogLevel())) {
                 return false;
             }
@@ -270,7 +268,7 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
                 return true;
             }
 
-            long nowMs = System.currentTimeMillis();
+            final long nowMs = System.currentTimeMillis();
             if (nowMs - periodMs < periodStartTimeMs) { // we are within period
                 return maxEmailCount > 0 && ++counter < maxEmailCount;
             } else { // graceful period expired
@@ -289,7 +287,7 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
 
         private final ByteBuffer buffer;
 
-        private ByteBufferDataSource(ByteBuffer buffer) {
+        private ByteBufferDataSource(final ByteBuffer buffer) {
             this.buffer = buffer.asReadOnlyBuffer();
         }
 
@@ -317,14 +315,15 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
 
             private final ByteBuffer buffer;
 
-            private ByteBufferInputStream(ByteBuffer buffer) {
+            private ByteBufferInputStream(final ByteBuffer buffer) {
                 this.buffer = buffer.duplicate();
             }
 
             @Override
             public int read() {
-                if (!buffer.hasRemaining())
+                if (!buffer.hasRemaining()) {
                     return -1;
+                }
 
                 return buffer.get();
             }
@@ -333,7 +332,7 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
 
     }
 
-    private final static class RingBuffer {
+    private static final class RingBuffer {
 
         private final int[] values;
         private final int capacity;
@@ -343,36 +342,41 @@ public final class SmtpAppender extends NioAppender<WritableByteChannel> {
         private boolean empty = true;
         private boolean full = false;
 
-        private RingBuffer(int capacity) {
-            if (capacity < 1)
+        private RingBuffer(final int capacity) {
+            if (capacity < 1) {
                 throw new IllegalArgumentException("capacity < 1");
+            }
 
             this.capacity = capacity;
             this.values = new int[capacity];
         }
 
-        private void add(int value) {
+        private void add(final int value) {
             values[head] = value;
             head = (head + 1) % capacity;
 
-            if (empty)
+            if (empty) {
                 empty = false;
+            }
 
-            if (full)
+            if (full) {
                 tail = head;
-            else
+            } else {
                 full = (head == tail);
+            }
         }
 
         private int remove() {
-            if (empty)
+            if (empty) {
                 throw new IllegalStateException("empty");
+            }
 
-            int value = values[tail];
+            final int value = values[tail];
             tail = (tail + 1) % capacity;
 
-            if (full)
+            if (full) {
                 full = false;
+            }
 
             empty = (tail == head);
             return value;

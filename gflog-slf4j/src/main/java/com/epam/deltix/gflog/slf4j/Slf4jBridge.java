@@ -11,7 +11,7 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
 
     private final Log log;
 
-    public Slf4jBridge(String name, Log log) {
+    public Slf4jBridge(final String name, final Log log) {
         this.name = name;
         this.log = log;
     }
@@ -22,35 +22,35 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
     }
 
     @Override
-    public void trace(String message) {
+    public void trace(final String message) {
         if (isTraceEnabled()) {
             log(message, log.trace());
         }
     }
 
     @Override
-    public void trace(String message, Object object) {
+    public void trace(final String message, final Object object) {
         if (isTraceEnabled()) {
             log(message, object, log.trace());
         }
     }
 
     @Override
-    public void trace(String message, Object object1, Object object2) {
+    public void trace(final String message, final Object object1, final Object object2) {
         if (isTraceEnabled()) {
             log(message, object1, object2, log.trace());
         }
     }
 
     @Override
-    public void trace(String message, Object[] objects) {
+    public void trace(final String message, final Object[] objects) {
         if (isTraceEnabled()) {
             log(message, objects, log.trace());
         }
     }
 
     @Override
-    public void trace(String message, Throwable exception) {
+    public void trace(final String message, final Throwable exception) {
         if (isTraceEnabled()) {
             log(message, exception, log.trace());
         }
@@ -62,35 +62,35 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
     }
 
     @Override
-    public void debug(String message) {
+    public void debug(final String message) {
         if (isDebugEnabled()) {
             log(message, log.debug());
         }
     }
 
     @Override
-    public void debug(String message, Object object) {
+    public void debug(final String message, final Object object) {
         if (isDebugEnabled()) {
             log(message, object, log.debug());
         }
     }
 
     @Override
-    public void debug(String message, Object object1, Object object2) {
+    public void debug(final String message, final Object object1, final Object object2) {
         if (isDebugEnabled()) {
             log(message, object1, object2, log.debug());
         }
     }
 
     @Override
-    public void debug(String message, Object[] objects) {
+    public void debug(final String message, final Object[] objects) {
         if (isDebugEnabled()) {
             log(message, objects, log.debug());
         }
     }
 
     @Override
-    public void debug(String message, Throwable exception) {
+    public void debug(final String message, final Throwable exception) {
         if (isDebugEnabled()) {
             log(message, exception, log.debug());
         }
@@ -102,37 +102,38 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
     }
 
     @Override
-    public void info(String message) {
+    public void info(final String message) {
         if (isInfoEnabled()) {
             log(message, log.info());
         }
     }
 
     @Override
-    public void info(String message, Object object) {
+    public void info(final String message, final Object object) {
         if (isInfoEnabled()) {
             log(message, object, log.info());
         }
     }
 
     @Override
-    public void info(String message, Object object1, Object object2) {
+    public void info(final String message, final Object object1, final Object object2) {
         if (isInfoEnabled()) {
             log(message, object1, object2, log.info());
         }
     }
 
     @Override
-    public void info(String message, Object[] objects) {
+    public void info(final String message, final Object[] objects) {
         if (isInfoEnabled()) {
             log(message, objects, log.info());
         }
     }
 
     @Override
-    public void info(String message, Throwable exception) {
-        if (isInfoEnabled())
+    public void info(final String message, final Throwable exception) {
+        if (isInfoEnabled()) {
             log(message, exception, log.info());
+        }
     }
 
     @Override
@@ -141,35 +142,35 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
     }
 
     @Override
-    public void warn(String message) {
+    public void warn(final String message) {
         if (isWarnEnabled()) {
             log(message, log.warn());
         }
     }
 
     @Override
-    public void warn(String message, Object object) {
+    public void warn(final String message, final Object object) {
         if (isWarnEnabled()) {
             log(message, object, log.warn());
         }
     }
 
     @Override
-    public void warn(String message, Object object1, Object object2) {
+    public void warn(final String message, final Object object1, final Object object2) {
         if (isWarnEnabled()) {
             log(message, object1, object2, log.warn());
         }
     }
 
     @Override
-    public void warn(String message, Object[] objects) {
+    public void warn(final String message, final Object[] objects) {
         if (isWarnEnabled()) {
             log(message, objects, log.warn());
         }
     }
 
     @Override
-    public void warn(String message, Throwable exception) {
+    public void warn(final String message, final Throwable exception) {
         if (isWarnEnabled()) {
             log(message, exception, log.warn());
         }
@@ -181,49 +182,49 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
     }
 
     @Override
-    public void error(String message) {
+    public void error(final String message) {
         if (isErrorEnabled()) {
             log(message, log.error());
         }
     }
 
     @Override
-    public void error(String message, Object object) {
+    public void error(final String message, final Object object) {
         if (isErrorEnabled()) {
             log(message, object, log.error());
         }
     }
 
     @Override
-    public void error(String message, Object object1, Object object2) {
+    public void error(final String message, final Object object1, final Object object2) {
         if (isErrorEnabled()) {
             log(message, object1, object2, log.error());
         }
     }
 
     @Override
-    public void error(String message, Object[] objects) {
+    public void error(final String message, final Object[] objects) {
         if (isErrorEnabled()) {
             log(message, objects, log.error());
         }
     }
 
     @Override
-    public void error(String message, Throwable exception) {
+    public void error(final String message, final Throwable exception) {
         if (isErrorEnabled()) {
             log(message, exception, log.error());
         }
     }
 
-    private static void log(String message, Throwable exception, LogEntry entry) {
+    private static void log(final String message, final Throwable exception, final LogEntry entry) {
         entry.append(message).appendLast(exception);
     }
 
-    private static void log(String message, LogEntry entry) {
+    private static void log(final String message, final LogEntry entry) {
         entry.appendLast(message);
     }
 
-    private static void log(String message, Object object, LogEntry entry) {
+    private static void log(final String message, final Object object, final LogEntry entry) {
         if (message == null) {
             entry.appendLast((String) null);
             return;
@@ -235,7 +236,7 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
         entry.commit();
     }
 
-    private static void log(String message, Object object1, Object object2, LogEntry entry) {
+    private static void log(final String message, final Object object1, final Object object2, final LogEntry entry) {
         if (message == null) {
             entry.appendLast((String) null);
             return;
@@ -260,7 +261,7 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
         entry.commit();
     }
 
-    private static void log(String message, Object[] objects, LogEntry entry) {
+    private static void log(final String message, final Object[] objects, final LogEntry entry) {
         if (message == null || objects == null) {
             log(message, entry);
             return;

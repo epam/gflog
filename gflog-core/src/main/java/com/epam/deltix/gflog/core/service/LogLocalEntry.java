@@ -11,8 +11,6 @@ import com.epam.deltix.gflog.core.util.Util;
 
 final class LogLocalEntry implements LogEntry, LogEntryTemplate {
 
-    private static final String PLACEHOLDER = "%s";
-
     private static final long LENGTH_OFFSET;
     private static final long LOG_NAME_OFFSET;
     private static final long LOG_LEVEL_OFFSET;
@@ -34,9 +32,13 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     private final LogService service;
     private final LogLimitedEntry entry;
     private final int offset;
+    private final boolean exceptional;
 
     private String template;
     private int templateIndex;
+
+    private Throwable exception;
+    private int exceptionPosition;
 
     private boolean committed = true;
 
@@ -45,14 +47,16 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
                   final String truncationSuffix,
                   final int initialCapacity,
                   final int maxCapacity,
-                  final boolean utf8) {
+                  final boolean utf8,
+                  final boolean exceptional) {
 
         this.service = service;
         this.entry = createEntry(thread, truncationSuffix, initialCapacity, maxCapacity, utf8);
         this.offset = entry.length();
+        this.exceptional = exceptional;
     }
 
-    public int length() {
+    int length() {
         return entry.length() - (int) (LENGTH_OFFSET - Util.ARRAY_BYTE_BASE_OFFSET);
     }
 
@@ -61,11 +65,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final char value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -74,11 +74,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final CharSequence value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -87,11 +83,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final CharSequence value, final int start, final int end) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value, start, end);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value, start, end);
         }
 
         return this;
@@ -100,11 +92,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final String value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -113,11 +101,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final String value, final int start, final int end) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value, start, end);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value, start, end);
         }
 
         return this;
@@ -126,11 +110,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final boolean value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -139,11 +119,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final int value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -152,11 +128,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final long value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -165,11 +137,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final double value) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value);
         }
 
         return this;
@@ -178,11 +146,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final double value, final int precision) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(value, precision);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(value, precision);
         }
 
         return this;
@@ -191,11 +155,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final Loggable object) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(object);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(object);
         }
 
         return this;
@@ -204,11 +164,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final Object object) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(object);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(object);
         }
 
         return this;
@@ -217,11 +173,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry append(final Throwable exception) {
         if (verifyNotCommitted()) {
-            try {
-                entry.append(exception);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppend(exception);
         }
 
         return this;
@@ -230,11 +182,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry appendDecimal64(final long decimal) {
         if (verifyNotCommitted()) {
-            try {
-                entry.appendDecimal64(decimal);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppendDecimal64(decimal);
         }
 
         return this;
@@ -243,11 +191,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry appendTimestamp(final long timestamp) {
         if (verifyNotCommitted()) {
-            try {
-                entry.appendTimestamp(timestamp);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppendTimestamp(timestamp);
         }
 
         return this;
@@ -256,11 +200,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry appendDate(final long timestamp) {
         if (verifyNotCommitted()) {
-            try {
-                entry.appendDate(timestamp);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppendDate(timestamp);
         }
 
         return this;
@@ -269,11 +209,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry appendTime(final long timestamp) {
         if (verifyNotCommitted()) {
-            try {
-                entry.appendTime(timestamp);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppendTime(timestamp);
         }
 
         return this;
@@ -282,14 +218,159 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     @Override
     public LogLocalEntry appendAlphanumeric(final long alphanumeric) {
         if (verifyNotCommitted()) {
-            try {
-                entry.appendAlphanumeric(alphanumeric);
-            } catch (final Throwable e) {
-                warnAppendError(e);
-            }
+            doAppendAlphanumeric(alphanumeric);
         }
 
         return this;
+    }
+
+    private void doAppend(final char value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final CharSequence value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final CharSequence value, final int start, final int end) {
+        try {
+            entry.append(value, start, end);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final String value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final String value, final int start, final int end) {
+        try {
+            entry.append(value, start, end);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final boolean value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final int value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final long value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final double value) {
+        try {
+            entry.append(value);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final double value, final int precision) {
+        try {
+            entry.append(value, precision);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final Loggable object) {
+        try {
+            entry.append(object);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final Object object) {
+        try {
+            entry.append(object);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppend(final Throwable throwable) {
+        try {
+            if (!exceptional || throwable == null || exception != null) {
+                entry.append(throwable);
+            } else {
+                exception = throwable;
+                exceptionPosition = entry.length() - offset;
+            }
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppendDecimal64(final long decimal) {
+        try {
+            entry.appendDecimal64(decimal);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppendTimestamp(final long timestamp) {
+        try {
+            entry.appendTimestamp(timestamp);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppendDate(final long timestamp) {
+        try {
+            entry.appendDate(timestamp);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppendTime(final long timestamp) {
+        try {
+            entry.appendTime(timestamp);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppendAlphanumeric(final long alphanumeric) {
+        try {
+            entry.appendAlphanumeric(alphanumeric);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
     }
 
     // endregion
@@ -297,129 +378,147 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     // region AppendLast
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final char value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final CharSequence value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final CharSequence value, final int start, final int end) {
-        append(value, start, end);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value, start, end);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final String value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final String value, final int start, final int end) {
-        append(value, start, end);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value, start, end);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final boolean value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final int value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final long value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final double value) {
-        append(value);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final double value, final int precision) {
-        append(value, precision);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(value, precision);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final Loggable object) {
-        append(object);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(object);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final Object object) {
-        append(object);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(object);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendLast(final Throwable exception) {
-        append(exception);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppend(exception);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendDecimal64Last(final long decimal) {
-        appendDecimal64(decimal);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppendDecimal64(decimal);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendTimestampLast(final long timestamp) {
-        appendTimestamp(timestamp);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppendTimestamp(timestamp);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendDateLast(final long timestamp) {
-        appendDate(timestamp);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppendDate(timestamp);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendTimeLast(final long timestamp) {
-        appendTime(timestamp);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppendTime(timestamp);
+            doCommit();
+        }
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void appendAlphanumericLast(final long alphanumeric) {
-        appendAlphanumeric(alphanumeric);
-        commit();
+        if (verifyNotCommitted()) {
+            doAppendAlphanumeric(alphanumeric);
+            doCommit();
+        }
     }
 
     // endregion
@@ -427,201 +526,247 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     // region With
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final char value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final CharSequence value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final CharSequence value, final int start, final int end) {
         if (verifyNotCommitted()) {
-            append(value, start, end);
-            appendTemplateChunk();
+            doAppend(value, start, end);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final String value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final String value, final int start, final int end) {
         if (verifyNotCommitted()) {
-            append(value, start, end);
-            appendTemplateChunk();
+            doAppend(value, start, end);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final boolean value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final int value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final long value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final double value) {
         if (verifyNotCommitted()) {
-            append(value);
-            appendTemplateChunk();
+            doAppend(value);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final double value, final int precision) {
         if (verifyNotCommitted()) {
-            append(value, precision);
-            appendTemplateChunk();
+            doAppend(value, precision);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final Loggable object) {
         if (verifyNotCommitted()) {
-            append(object);
-            appendTemplateChunk();
+            doAppend(object);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final Object object) {
         if (verifyNotCommitted()) {
-            append(object);
-            appendTemplateChunk();
+            doAppend(object);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry with(final Throwable exception) {
         if (verifyNotCommitted()) {
-            append(exception);
-            appendTemplateChunk();
+            doAppend(exception);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry withDecimal64(final long decimal) {
         if (verifyNotCommitted()) {
-            appendDecimal64(decimal);
-            appendTemplateChunk();
+            doAppendDecimal64(decimal);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry withTimestamp(final long timestamp) {
         if (verifyNotCommitted()) {
-            appendTimestamp(timestamp);
-            appendTemplateChunk();
+            doAppendTimestamp(timestamp);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry withDate(final long timestamp) {
         if (verifyNotCommitted()) {
-            appendDate(timestamp);
-            appendTemplateChunk();
+            doAppendDate(timestamp);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry withTime(final long timestamp) {
         if (verifyNotCommitted()) {
-            appendTime(timestamp);
-            appendTemplateChunk();
+            doAppendTime(timestamp);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
     }
 
     @Override
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public LogLocalEntry withAlphanumeric(final long alphanumeric) {
         if (verifyNotCommitted()) {
-            appendAlphanumeric(alphanumeric);
-            appendTemplateChunk();
+            doAppendAlphanumeric(alphanumeric);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
         }
 
         return this;
+    }
+
+    private boolean doAppendTemplate() {
+        final int length = template.length();
+        final int index = findPlaceholder(template, templateIndex, length);
+
+        entry.append(template, templateIndex, index);
+        templateIndex = index + 2;
+
+        return index == length;
     }
 
     // endregion With
@@ -630,14 +775,14 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     public void abort() {
         if (verifyNotCommitted()) {
             committed = true;
+            exception = null;
         }
     }
 
     @Override
     public void commit() {
         if (verifyNotCommitted()) {
-            service.commit(this);
-            committed = true;
+            doCommit();
         }
     }
 
@@ -656,7 +801,9 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
         this.template = template;
         this.templateIndex = 0;
 
-        appendTemplateChunk();
+        if (doAppendTemplate()) {
+            doCommit();
+        }
     }
 
     void onCommit(final long timestamp) {
@@ -681,23 +828,24 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     private void reuse() {
         if (!committed) {
             warnNotCommitted();
-            service.commit(this);
+            doCommit();
         }
 
         entry.reset(offset);
         committed = false;
     }
 
-    private void appendTemplateChunk() {
-        final int i = template.indexOf(PLACEHOLDER, templateIndex);
+    private void doCommit() {
+        final Throwable throwable = exception;
 
-        if (i >= 0) {
-            entry.append(template, templateIndex, i);
-            templateIndex = i + 2;
+        if (throwable == null) {
+            service.commit(this);
         } else {
-            entry.append(template, templateIndex, template.length());
-            commit();
+            exception = null;
+            service.commit(this, throwable, exceptionPosition);
         }
+
+        committed = true;
     }
 
     private boolean verifyNotCommitted() {
@@ -711,7 +859,8 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
 
     private void warnNotCommitted() {
         if (LogDebug.isWarnEnabled()) {
-            final IllegalStateException e = new IllegalStateException("log entry was not committed. Message: " + entry.substring(offset, entry.length()));
+            final String message = entry.substring(offset, entry.length());
+            final IllegalStateException e = new IllegalStateException("log entry was not committed. Message: " + message);
             LogDebug.warn(e);
         }
     }
@@ -736,7 +885,7 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
                                                final boolean utf8) {
 
         final String threadName = thread.getName();
-        final byte threadNameLength = (byte) Util.findUtf8Bound(threadName, 0, threadName.length(), Byte.MAX_VALUE);
+        final byte threadNameLength = (byte) Util.limitUtf8Index(threadName, 0, threadName.length(), Byte.MAX_VALUE);
         final int offset = (int) (THREAD_NAME_DATA_OFFSET + threadNameLength - Util.ARRAY_BYTE_BASE_OFFSET);
 
         final LogLimitedEntry entry = utf8 ?
@@ -750,6 +899,16 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
         entry.reset(offset);
 
         return entry;
+    }
+
+    private static int findPlaceholder(final String template, final int start, final int end) {
+        for (int index = start, limit = end - 1; index < limit; index++) {
+            if (template.charAt(index) == '%' && template.charAt(index + 1) == 's') {
+                return index;
+            }
+        }
+
+        return end;
     }
 
 }

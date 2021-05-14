@@ -1,4 +1,4 @@
-package com.epam.deltix.gflog.benchmark.appender;
+package com.epam.deltix.gflog.benchmark.util;
 
 import com.epam.deltix.gflog.api.LogLevel;
 import com.epam.deltix.gflog.core.LogRecord;

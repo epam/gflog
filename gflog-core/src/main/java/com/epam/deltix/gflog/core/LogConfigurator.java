@@ -32,11 +32,6 @@ public final class LogConfigurator {
 
     }
 
-    @Deprecated
-    public static synchronized void configureWithShutdown(final String url, final Properties properties, final boolean validate) throws Exception {
-        configureWithShutdown(url, properties);
-    }
-
     public static synchronized void configureWithShutdown(final LogConfig configuration) {
         configure(configuration);
         activateShutdownHook();
@@ -50,11 +45,6 @@ public final class LogConfigurator {
         unconfigure();
         final LogConfig config = LogConfigFactory.load(url, properties);
         configure(config);
-    }
-
-    @Deprecated
-    public static synchronized void configure(final String url, final Properties properties, final boolean validate) throws Exception {
-        configure(url, properties);
     }
 
     public static synchronized void configure(final LogConfig config) {

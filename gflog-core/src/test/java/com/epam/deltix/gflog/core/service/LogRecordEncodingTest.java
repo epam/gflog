@@ -18,7 +18,7 @@ public class LogRecordEncodingTest {
     private static final int CAPACITY = 300;
 
     private final LogIndex index = new LogIndex();
-    private final LogRecordDecoder decoder = new LogRecordDecoder(index);
+    private final LogRecordDecoder decoder = new LogRecordDecoder(null, index, null);
     private final MutableBuffer buffer = UnsafeBuffer.allocateDirect(CAPACITY + OFFSET);
 
     @Test

@@ -1,6 +1,6 @@
 <config>
 
-    <appender name="noop" factory="com.epam.deltix.gflog.benchmark.appender.NoOpAppenderFactory"/>
+    <appender name="noop" factory="com.epam.deltix.gflog.benchmark.util.NoOpAppenderFactory"/>
 
     <logger>
         <appender-ref ref="noop"/>

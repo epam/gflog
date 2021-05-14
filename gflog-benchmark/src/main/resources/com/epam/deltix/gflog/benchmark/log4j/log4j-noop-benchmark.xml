@@ -1,0 +1,11 @@
+<Configuration name="Benchmark" status="info" shutdownHook="disable">
+    <Appenders>
+        <Null name="noop">
+        </Null>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="noop"/>
+        </Root>
+    </Loggers>
+</Configuration>

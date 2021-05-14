@@ -6,6 +6,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
+    apply plugin: 'checkstyle'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -55,7 +56,7 @@ subprojects {
                 pom {
                     name = 'gflog'
                     packaging = 'jar'
-                    description = 'High efficient garbage free logging framework for Java 8+'
+                    description = 'Highly efficient garbage-free logging framework for Java 8+'
                     url = 'https://github.com/epam/GFLog'
 
                     scm {
@@ -144,7 +145,7 @@ project('gflog-slf4j') {
 project('gflog-benchmark') {
     apply plugin: 'com.github.johnrengelman.shadow'
 
-    jar {
+    shadowJar {
         manifest {
             attributes(
                     'Main-Class': 'org.openjdk.jmh.Main'
@@ -155,6 +156,11 @@ project('gflog-benchmark') {
     dependencies {
         annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.27'
         implementation 'org.openjdk.jmh:jmh-core:1.27'
+        implementation 'org.openjdk.jol:jol-core:0.14'
+        implementation 'org.hdrhistogram:HdrHistogram:2.1.12'
+        implementation 'net.openhft:affinity:3.21ea1'
+        implementation 'org.apache.logging.log4j:log4j-core:2.14.0'
+        implementation 'com.lmax:disruptor:3.4.2'
         implementation project(':gflog-core')
     }
 }

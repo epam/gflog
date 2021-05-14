@@ -49,8 +49,9 @@ public class FormattingTest {
 
     @Test
     public void formatInt() {
-        int[] specialValues = {Integer.MIN_VALUE, Integer.MAX_VALUE};
-        for (int value : specialValues) {
+        final int[] specialValues = {Integer.MIN_VALUE, Integer.MAX_VALUE};
+
+        for (final int value : specialValues) {
             verifyInt(value);
         }
 
@@ -67,8 +68,9 @@ public class FormattingTest {
 
     @Test
     public void formatLong() {
-        long[] specialValues = {Long.MIN_VALUE, Long.MAX_VALUE};
-        for (long value : specialValues) {
+        final long[] specialValues = {Long.MIN_VALUE, Long.MAX_VALUE};
+
+        for (final long value : specialValues) {
             verifyLong(value);
         }
 
@@ -85,10 +87,10 @@ public class FormattingTest {
 
     @Test
     public void formatDouble() {
-        double[] specialValues = {
+        final double[] specialValues = {
                 0.0, -0.0, 0.999999999999999
         };
-        for (double value : specialValues) {
+        for (final double value : specialValues) {
             verifyDouble(value);
         }
 
@@ -116,8 +118,9 @@ public class FormattingTest {
 
     @Test
     public void formatTimestamp() {
-        long[] specialValues = {Formatting.MIN_VALUE_OF_TIMESTAMP, Formatting.MAX_VALUE_OF_TIMESTAMP};
-        for (long value : specialValues) {
+        final long[] specialValues = {Formatting.MIN_VALUE_OF_TIMESTAMP, Formatting.MAX_VALUE_OF_TIMESTAMP};
+
+        for (final long value : specialValues) {
             verifyTimestamp(value);
         }
 
@@ -129,8 +132,9 @@ public class FormattingTest {
 
     @Test
     public void formatDate() {
-        long[] specialValues = {Formatting.MIN_VALUE_OF_TIMESTAMP, Formatting.MAX_VALUE_OF_TIMESTAMP};
-        for (long value : specialValues) {
+        final long[] specialValues = {Formatting.MIN_VALUE_OF_TIMESTAMP, Formatting.MAX_VALUE_OF_TIMESTAMP};
+
+        for (final long value : specialValues) {
             verifyDate(value);
         }
 
@@ -165,7 +169,7 @@ public class FormattingTest {
     }
 
     private void verifyInt(final int value) {
-        String expected = TestUtil.formatInt(value);
+        final String expected = TestUtil.formatInt(value);
 
         final int offset = TestUtil.randomInt(0, 64);
         int end = Formatting.formatInt(value, array, offset);
@@ -235,8 +239,8 @@ public class FormattingTest {
         }
     }
 
-    private void assertFormatAlphanumeric(long value) {
-        String expected = TestUtil.formatAlphanumeric(value);
+    private void assertFormatAlphanumeric(final long value) {
+        final String expected = TestUtil.formatAlphanumeric(value);
 
         final int offset = TestUtil.randomInt(0, 64);
         int end = Formatting.formatAlphanumeric(value, array, offset);
@@ -246,7 +250,7 @@ public class FormattingTest {
         Assert.assertEquals("formatAlphanumeric", expected, new String(buffer.byteArray(), offset, end - offset));
     }
 
-    private void verifyTimestamp(long timestamp) {
+    private void verifyTimestamp(final long timestamp) {
         final String expected = TestUtil.formatTimestamp(timestamp);
 
         final int offset = TestUtil.randomInt(0, 64);
