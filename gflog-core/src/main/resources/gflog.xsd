@@ -5,6 +5,7 @@
     <xs:element name="config">
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="include" type="includeType" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="appender" type="appenderType" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="logger" type="loggerType" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="service" type="serviceType" minOccurs="0" maxOccurs="1"/>
@@ -92,6 +93,10 @@
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="optional" default=""/>
         <xs:attribute name="level" type="levelType" use="optional" default="INFO"/>
+    </xs:complexType>
+
+    <xs:complexType name="includeType">
+        <xs:attribute name="resource" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="appenderRefType">

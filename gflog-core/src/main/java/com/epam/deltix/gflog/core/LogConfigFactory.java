@@ -48,6 +48,7 @@ public final class LogConfigFactory {
     public static final boolean CONFIG_CLASSPATH_SEARCH = PropertyUtil.getBoolean("gflog.config.classpath.search", true);
     private static final String[] CONFIG_CLASSPATH_FILES = {"gflog-test.xml", "gflog.xml"};
 
+    private static final String INCLUDE = "include";
     private static final String APPENDER = "appender";
     private static final String APPENDER_REF = "appender-ref";
     private static final String LOGGER = "logger";
@@ -263,8 +264,25 @@ public final class LogConfigFactory {
         addAppenders(root, config);
         addLoggers(root, config);
         setService(root, config);
+        addIncludes(root, config);
 
         return config;
+    }
+
+    private static void addIncludes(final Element root, final LogConfig config) throws Exception {
+        final NodeList elements = root.getElementsByTagName(INCLUDE);
+
+        for (int i = 0; i < elements.getLength(); i++ ) {
+            final Element element = (Element) elements.item(i);
+            LogConfig config1 = load(element.getAttribute("resource"));
+
+            for (Appender a : config1.getAppenders()) {
+                config.addAppender(a);
+            }
+            for (Logger l : config1.getLoggers()) {
+                config.addLogger(l);
+            }
+        }
     }
 
     private static void addAppenders(final Element root, final LogConfig config) throws Exception {

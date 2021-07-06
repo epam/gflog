@@ -66,4 +66,12 @@ public final class Logger {
         return appenders;
     }
 
+    @Override
+    public String toString() {
+        return "Logger{" +
+                "name='" + name + '\'' +
+                ", level=" + level +
+                ", appenders=" + appenders +
+                '}';
+    }
 }

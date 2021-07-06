@@ -33,4 +33,11 @@ public abstract class Appender implements AutoCloseable {
 
     public abstract int flush() throws Exception;
 
+    @Override
+    public String toString() {
+        return "Appender{" +
+                "name='" + name + '\'' +
+                ", level=" + level +
+                '}';
+    }
 }
