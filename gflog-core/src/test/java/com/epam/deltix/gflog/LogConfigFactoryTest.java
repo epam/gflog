@@ -16,11 +16,11 @@ public class LogConfigFactoryTest {
 
     @Test
     public void checkInclude() {
-        Assert.assertEquals( "[Appender{name='file', level=TRACE}, Appender{name='file_included', level=INFO}]",
+        Assert.assertEquals("[Appender{name='file', level=TRACE}, Appender{name='file_included', level=INFO}]",
                 logConfig.getAppenders().toString());
 
         Assert.assertEquals("[Logger{name='', level=INFO, appenders=[Appender{name='file', level=TRACE}]}, " +
-                "Logger{name='logger_included', level=INFO, appenders=[Appender{name='file_included', level=INFO}]}]",
-                        logConfig.getLoggers().toString());
+                        "Logger{name='logger_included', level=INFO, appenders=[Appender{name='file_included', level=INFO}]}]",
+                logConfig.getLoggers().toString());
     }
 }

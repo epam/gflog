@@ -272,14 +272,14 @@ public final class LogConfigFactory {
     private static void addIncludes(final Element root, final LogConfig config) throws Exception {
         final NodeList elements = root.getElementsByTagName(INCLUDE);
 
-        for (int i = 0; i < elements.getLength(); i++ ) {
+        for (int i = 0; i < elements.getLength(); i++) {
             final Element element = (Element) elements.item(i);
-            LogConfig config1 = load(element.getAttribute("resource"));
+            final LogConfig config1 = load(element.getAttribute("resource"));
 
-            for (Appender a : config1.getAppenders()) {
+            for (final Appender a : config1.getAppenders()) {
                 config.addAppender(a);
             }
-            for (Logger l : config1.getLoggers()) {
+            for (final Logger l : config1.getLoggers()) {
                 config.addLogger(l);
             }
         }
