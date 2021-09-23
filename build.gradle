@@ -145,22 +145,16 @@ project('gflog-slf4j') {
 project('gflog-benchmark') {
     apply plugin: 'com.github.johnrengelman.shadow'
 
-    shadowJar {
-        manifest {
-            attributes(
-                    'Main-Class': 'org.openjdk.jmh.Main'
-            )
-        }
-    }
+    shadowJar.manifest.attributes << ['Main-Class': 'org.openjdk.jmh.Main']
 
     dependencies {
-        annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.27'
-        implementation 'org.openjdk.jmh:jmh-core:1.27'
-        implementation 'org.openjdk.jol:jol-core:0.14'
+        annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.32'
+        implementation 'org.openjdk.jmh:jmh-core:1.32'
+        implementation 'org.openjdk.jol:jol-core:0.16'
         implementation 'org.hdrhistogram:HdrHistogram:2.1.12'
-        implementation 'net.openhft:affinity:3.21ea1'
-        implementation 'org.apache.logging.log4j:log4j-core:2.14.0'
-        implementation 'com.lmax:disruptor:3.4.2'
+        implementation 'net.openhft:affinity:3.21ea5'
+        implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
+        implementation 'com.lmax:disruptor:3.4.4'
         implementation project(':gflog-core')
     }
 }
@@ -178,6 +172,6 @@ task publishAll(dependsOn: publishingProjects.collect { it.path + ":publish" }) 
 }
 
 wrapper {
-    gradleVersion = '6.8.2'
+    gradleVersion = '7.1.1'
     distributionType = Wrapper.DistributionType.BIN
 }

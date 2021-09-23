@@ -3,6 +3,7 @@ package com.epam.deltix.gflog.benchmark.log4j;
 import com.epam.deltix.gflog.benchmark.util.BenchmarkState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.spi.LoggerContext;
 
 import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
 import static org.apache.logging.log4j.util.Unbox.box;
@@ -25,12 +26,10 @@ final class Log4jBenchmarkUtil {
     }
 
     public static void cleanup() {
-        try {
-            LogManager.shutdown();
-            deleteTempDirectory();
-        } catch (final Exception e) {
-            // ignore
-        }
+        final LoggerContext context = LogManager.getContext(false);
+        LogManager.shutdown(context);
+
+        deleteTempDirectory();
     }
 
     public static void log0Arg(final BenchmarkState state) {

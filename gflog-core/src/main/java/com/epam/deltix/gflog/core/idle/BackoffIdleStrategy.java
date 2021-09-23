@@ -31,11 +31,14 @@ abstract class BackoffIdleStrategyData extends BackoffIdleStrategyLhs {
     int state = WORKING;
     long value;
 
-    BackoffIdleStrategyData(
-            final long maxSpins, final long maxYields, final long minParkPeriodNs, final long maxParkPeriodNs) {
+    BackoffIdleStrategyData(final long maxSpins,
+                            final long maxYields,
+                            final long minParkPeriodNs,
+                            final long maxParkPeriodNs) {
 
         if (minParkPeriodNs < 1 || maxParkPeriodNs < minParkPeriodNs) {
-            throw new IllegalArgumentException("Min park period " + minParkPeriodNs + " < 1 or max park period " + maxParkPeriodNs + " < min");
+            throw new IllegalArgumentException("Min park period " + minParkPeriodNs +
+                    " < 1 or max park period " + maxParkPeriodNs + " < min");
         }
 
         this.maxSpins = maxSpins;
@@ -57,7 +60,10 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
             b096, b097, b098, b099, b100, b101, b102, b103, b104, b105, b106, b107, b108, b109, b110, b111,
             b112, b113, b114, b115, b116, b117, b118, b119, b120, b121, b122, b123, b124, b125, b126, b127;
 
-    public BackoffIdleStrategy(final long maxSpins, final long maxYields, final long minParkPeriodNs, final long maxParkPeriodNs) {
+    public BackoffIdleStrategy(final long maxSpins,
+                               final long maxYields,
+                               final long minParkPeriodNs,
+                               final long maxParkPeriodNs) {
         super(maxSpins, maxYields, minParkPeriodNs, maxParkPeriodNs);
     }
 
