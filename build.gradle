@@ -137,7 +137,7 @@ project('gflog-jul') {
 project('gflog-slf4j') {
     dependencies {
         api project(':gflog-api')
-        api 'org.slf4j:slf4j-api:1.7.25'
+        api 'org.slf4j:slf4j-api:1.7.36'
         testImplementation project(':gflog-core')
     }
 }
@@ -148,12 +148,12 @@ project('gflog-benchmark') {
     shadowJar.manifest.attributes << ['Main-Class': 'org.openjdk.jmh.Main']
 
     dependencies {
-        annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.32'
-        implementation 'org.openjdk.jmh:jmh-core:1.32'
+        annotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.34'
+        implementation 'org.openjdk.jmh:jmh-core:1.34'
         implementation 'org.openjdk.jol:jol-core:0.16'
         implementation 'org.hdrhistogram:HdrHistogram:2.1.12'
-        implementation 'net.openhft:affinity:3.21ea5'
-        implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
+        implementation 'net.openhft:affinity:3.21ea83'
+        implementation 'org.apache.logging.log4j:log4j-core:2.17.2'
         implementation 'com.lmax:disruptor:3.4.4'
         implementation project(':gflog-core')
     }
@@ -172,6 +172,6 @@ task publishAll(dependsOn: publishingProjects.collect { it.path + ":publish" }) 
 }
 
 wrapper {
-    gradleVersion = '7.1.1'
+    gradleVersion = '7.4.1'
     distributionType = Wrapper.DistributionType.BIN
 }
