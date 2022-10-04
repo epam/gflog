@@ -41,8 +41,7 @@ public final class Util {
             ARRAY_LONG_BASE_OFFSET = UNSAFE.arrayBaseOffset(long[].class);
             BYTE_BUFFER_HB_FIELD_OFFSET = UNSAFE.objectFieldOffset(ByteBuffer.class.getDeclaredField("hb"));
             BYTE_BUFFER_OFFSET_FIELD_OFFSET = UNSAFE.objectFieldOffset(ByteBuffer.class.getDeclaredField("offset"));
-            BYTE_BUFFER_ADDRESS_FIELD_OFFSET = UNSAFE.objectFieldOffset(
-                    java.nio.Buffer.class.getDeclaredField("address"));
+            BYTE_BUFFER_ADDRESS_FIELD_OFFSET = UNSAFE.objectFieldOffset(java.nio.Buffer.class.getDeclaredField("address"));
         } catch (final Exception ex) {
             throw new Error(ex);
         }
