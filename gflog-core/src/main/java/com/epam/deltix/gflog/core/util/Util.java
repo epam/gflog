@@ -24,6 +24,7 @@ public final class Util {
 
     private static final long BYTE_BUFFER_HB_FIELD_OFFSET;
     private static final long BYTE_BUFFER_OFFSET_FIELD_OFFSET;
+    private static final long BYTE_BUFFER_ADDRESS_FIELD_OFFSET;
 
     static {
         try {
@@ -40,6 +41,7 @@ public final class Util {
             ARRAY_LONG_BASE_OFFSET = UNSAFE.arrayBaseOffset(long[].class);
             BYTE_BUFFER_HB_FIELD_OFFSET = UNSAFE.objectFieldOffset(ByteBuffer.class.getDeclaredField("hb"));
             BYTE_BUFFER_OFFSET_FIELD_OFFSET = UNSAFE.objectFieldOffset(ByteBuffer.class.getDeclaredField("offset"));
+            BYTE_BUFFER_ADDRESS_FIELD_OFFSET = UNSAFE.objectFieldOffset(java.nio.Buffer.class.getDeclaredField("address"));
         } catch (final Exception ex) {
             throw new Error(ex);
         }
@@ -366,7 +368,7 @@ public final class Util {
      * @return the memory address at which the buffer storage begins.
      */
     static long address(final ByteBuffer buffer) {
-        return ((sun.nio.ch.DirectBuffer) buffer).address();
+        return UNSAFE.getLong(buffer, BYTE_BUFFER_ADDRESS_FIELD_OFFSET);
     }
 
     /**
