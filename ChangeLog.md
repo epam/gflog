@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.0.3
+
+- Support Java 17 (replaced usage of internal api to get address of direct ByteBuffer)
+
 ## 3.0.2
 
 - Fixed the issue with JulBridge.install() [#6](https://github.com/epam/gflog/issues/6).
