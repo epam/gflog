@@ -12,3 +12,7 @@ query-filters:
       id: java/unused-parameter
   - exclude:
       id: java/confusing-method-signature
+  - exclude:
+      id: java/uncaught-number-format-exception
+  - exclude:
+      id: java/local-shadows-field
