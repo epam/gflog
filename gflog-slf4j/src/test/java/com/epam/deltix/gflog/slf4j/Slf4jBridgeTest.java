@@ -17,7 +17,7 @@ public class Slf4jBridgeTest {
         log.info("{}", "3");
         log.info("--{}--", "4");
 
-        log.info("--{}--", "5", "6");   // lgtm
+        log.info("--{}--", "5", "6");   //lgtm
         log.info("--{}--", "6", new IllegalArgumentException());
         log.info("--{}", "7", new IllegalArgumentException());
 

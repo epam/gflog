@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.spi.LoggerContext;
 
+import java.util.Objects;
+
 import static com.epam.deltix.gflog.benchmark.util.BenchmarkUtil.*;
 import static org.apache.logging.log4j.util.Unbox.box;
 
@@ -23,6 +25,7 @@ final class Log4jBenchmarkUtil {
 
         deleteTempDirectory();
         final Logger lazy = getLogger(); // forces lazy initialization
+        Objects.requireNonNull(lazy);
     }
 
     public static void cleanup() {
