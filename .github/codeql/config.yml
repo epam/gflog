@@ -1,0 +1,8 @@
+name: "CodeQL Config"
+
+queries:
+  - uses: security-and-quality
+
+query-filters:
+  - exclude:
+      id: java/jdk-internal-api-access
