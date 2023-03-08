@@ -8,3 +8,5 @@ query-filters:
       id: java/jdk-internal-api-access
   - exclude:
       id: java/missing-override-annotation
+  - exclude:
+      id: java/unused-parameter
