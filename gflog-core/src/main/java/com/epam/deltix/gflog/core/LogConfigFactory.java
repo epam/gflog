@@ -251,7 +251,7 @@ public final class LogConfigFactory {
         final String original = new String(array, 0, length, StandardCharsets.UTF_8);
         final String substitution = PropertyUtil.substitute(original, properties);
 
-        return (original == substitution) ?
+        return original.equals(substitution) ?
                 new ByteArrayInputStream(array, 0, length) :
                 new ByteArrayInputStream(substitution.getBytes(StandardCharsets.UTF_8));
     }

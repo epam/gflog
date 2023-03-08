@@ -334,9 +334,9 @@ final class FastDateFormat {
             return false;
         }
         final FastDateFormat other = (FastDateFormat) obj;
-        return (mPattern == other.mPattern || mPattern.equals(other.mPattern)) &&
-                (mTimeZone == other.mTimeZone || mTimeZone.equals(other.mTimeZone)) &&
-                (mLocale == other.mLocale || mLocale.equals(other.mLocale)) &&
+        return Objects.equals(mPattern, other.mPattern) &&
+                Objects.equals(mTimeZone, other.mTimeZone) &&
+                Objects.equals(mLocale, other.mLocale) &&
                 (mTimeZoneForced == other.mTimeZoneForced) &&
                 (mLocaleForced == other.mLocaleForced);
     }
