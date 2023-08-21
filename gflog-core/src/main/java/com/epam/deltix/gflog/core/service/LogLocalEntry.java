@@ -198,6 +198,15 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public LogEntry appendTimestampNs(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendTimestampNs(timestampNs);
+        }
+
+        return this;
+    }
+
+    @Override
     public LogLocalEntry appendDate(final long timestamp) {
         if (verifyNotCommitted()) {
             doAppendDate(timestamp);
@@ -207,9 +216,27 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public LogEntry appendDateNs(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendDateNs(timestampNs);
+        }
+
+        return this;
+    }
+
+    @Override
     public LogLocalEntry appendTime(final long timestamp) {
         if (verifyNotCommitted()) {
             doAppendTime(timestamp);
+        }
+
+        return this;
+    }
+
+    @Override
+    public LogEntry appendTimeNs(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendTimeNs(timestampNs);
         }
 
         return this;
@@ -349,6 +376,14 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
         }
     }
 
+    private void doAppendTimestampNs(final long timestampNs) {
+        try {
+            entry.appendTimestampNs(timestampNs);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
     private void doAppendDate(final long timestamp) {
         try {
             entry.appendDate(timestamp);
@@ -357,9 +392,25 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
         }
     }
 
+    private void doAppendDateNs(final long timestampNs) {
+        try {
+            entry.appendDateNs(timestampNs);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
     private void doAppendTime(final long timestamp) {
         try {
             entry.appendTime(timestamp);
+        } catch (final Throwable e) {
+            warnAppendError(e);
+        }
+    }
+
+    private void doAppendTimeNs(final long timestampNs) {
+        try {
+            entry.appendTimeNs(timestampNs);
         } catch (final Throwable e) {
             warnAppendError(e);
         }
@@ -498,6 +549,14 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public void appendTimestampNsLast(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendTimestampNs(timestampNs);
+            doCommit();
+        }
+    }
+
+    @Override
     public void appendDateLast(final long timestamp) {
         if (verifyNotCommitted()) {
             doAppendDate(timestamp);
@@ -506,9 +565,25 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public void appendDateNsLast(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendDateNs(timestampNs);
+            doCommit();
+        }
+    }
+
+    @Override
     public void appendTimeLast(final long timestamp) {
         if (verifyNotCommitted()) {
             doAppendTime(timestamp);
+            doCommit();
+        }
+    }
+
+    @Override
+    public void appendTimeNsLast(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendTimeNs(timestampNs);
             doCommit();
         }
     }
@@ -721,6 +796,19 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public LogEntryTemplate withTimestampNs(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendTimestampNs(timestampNs);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
+        }
+
+        return this;
+    }
+
+    @Override
     public LogLocalEntry withDate(final long timestamp) {
         if (verifyNotCommitted()) {
             doAppendDate(timestamp);
@@ -734,9 +822,35 @@ final class LogLocalEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public LogEntryTemplate withDateNs(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendDateNs(timestampNs);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
+        }
+
+        return this;
+    }
+
+    @Override
     public LogLocalEntry withTime(final long timestamp) {
         if (verifyNotCommitted()) {
             doAppendTime(timestamp);
+
+            if (doAppendTemplate()) {
+                doCommit();
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public LogEntryTemplate withTimeNs(long timestampNs) {
+        if (verifyNotCommitted()) {
+            doAppendTimeNs(timestampNs);
 
             if (doAppendTemplate()) {
                 doCommit();

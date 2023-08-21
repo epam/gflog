@@ -83,6 +83,7 @@ public class LogUtf8EntryFormattingTest {
             final long longValue = TestUtil.randomLongWithLength(1, 19);
 
             final long timestampValue = TestUtil.randomTimestamp();
+            final long timestampNsValue = TestUtil.randomTimestampNs();
             final long alphanumericValue = TestUtil.randomAlphanumeric(-1, 10);
 
             final int precision = TestUtil.randomInt(0, 9);
@@ -96,8 +97,11 @@ public class LogUtf8EntryFormattingTest {
                     .append(", int=").append(intValue)
                     .append(", long=").append(longValue)
                     .append(", timestamp=").append(TestUtil.formatTimestamp(timestampValue))
+                    .append(", timestampNs=").append(TestUtil.formatTimestampNs(timestampNsValue))
                     .append(", date=").append(TestUtil.formatDate(timestampValue))
+                    .append(", dateNs=").append(TestUtil.formatDateNs(timestampNsValue))
                     .append(", time=").append(TestUtil.formatTime(timestampValue))
+                    .append(", timeNs=").append(TestUtil.formatTimeNs(timestampNsValue))
                     .append(", alphanumeric=").append(TestUtil.formatAlphanumeric(alphanumericValue))
                     .append(", double=").append(i)
                     .append(", doubleWithPrecision=").append(formatDouble(i, precision))
@@ -113,8 +117,11 @@ public class LogUtf8EntryFormattingTest {
                     .append(", int=").append(intValue)
                     .append(", long=").append(longValue)
                     .append(", timestamp=").appendTimestamp(timestampValue)
+                    .append(", timestampNs=").appendTimestampNs(timestampNsValue)
                     .append(", date=").appendDate(timestampValue)
+                    .append(", dateNs=").appendDateNs(timestampNsValue)
                     .append(", time=").appendTime(timestampValue)
+                    .append(", timeNs=").appendTimeNs(timestampNsValue)
                     .append(", alphanumeric=").appendAlphanumeric(alphanumericValue)
                     .append(", double=").append(i)
                     .append(", doubleWithPrecision=").append(i, precision)

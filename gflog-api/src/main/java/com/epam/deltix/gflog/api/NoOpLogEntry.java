@@ -84,12 +84,27 @@ public final class NoOpLogEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public LogEntry appendTimestampNs(long timestampNs) {
+        return this;
+    }
+
+    @Override
     public NoOpLogEntry appendDate(final long timestamp) {
         return this;
     }
 
     @Override
+    public LogEntry appendDateNs(long timestampNs) {
+        return this;
+    }
+
+    @Override
     public NoOpLogEntry appendTime(final long timestamp) {
+        return this;
+    }
+
+    @Override
+    public LogEntry appendTimeNs(long timestampNs) {
         return this;
     }
 
@@ -159,11 +174,23 @@ public final class NoOpLogEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public void appendTimestampNsLast(long timestampNs) {
+    }
+
+    @Override
     public void appendDateLast(final long timestamp) {
     }
 
     @Override
+    public void appendDateNsLast(long timestampNs) {
+    }
+
+    @Override
     public void appendTimeLast(final long timestamp) {
+    }
+
+    @Override
+    public void appendTimeNsLast(long timestampNs) {
     }
 
     @Override
@@ -254,12 +281,27 @@ public final class NoOpLogEntry implements LogEntry, LogEntryTemplate {
     }
 
     @Override
+    public LogEntryTemplate withTimestampNs(long timestampNs) {
+        return this;
+    }
+
+    @Override
     public NoOpLogEntry withDate(final long timestamp) {
         return this;
     }
 
     @Override
+    public LogEntryTemplate withDateNs(long timestampNs) {
+        return this;
+    }
+
+    @Override
     public NoOpLogEntry withTime(final long timestamp) {
+        return this;
+    }
+
+    @Override
+    public LogEntryTemplate withTimeNs(long timestampNs) {
         return this;
     }
 

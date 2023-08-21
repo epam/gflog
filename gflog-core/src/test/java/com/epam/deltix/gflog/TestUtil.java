@@ -1,5 +1,7 @@
 package com.epam.deltix.gflog;
 
+import com.epam.deltix.gflog.core.util.Formatting;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -11,8 +13,10 @@ public class TestUtil {
 
     protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
     protected static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+    protected static final DateTimeFormatter TIMESTAMP_NS_FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'");
     protected static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd");
     protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    protected static final DateTimeFormatter TIME_NS_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSS");
 
     private static final int[] INT_RANGE = {0, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, Integer.MAX_VALUE};
 
@@ -32,9 +36,13 @@ public class TestUtil {
         return Decimal64Util.parse(value);
     }
 
-
     public static long randomTimestamp() {
-        final long timestamp = random().nextLong(-1000, 3153600000000L);
+        final long timestamp = random().nextLong(-1000, Formatting.MAX_VALUE_OF_TIMESTAMP);
+        return (timestamp < 0) ? Long.MIN_VALUE : timestamp;
+    }
+
+    public static long randomTimestampNs() {
+        final long timestamp = random().nextLong(-1000, Formatting.MAX_VALUE_OF_TIMESTAMP_NS);
         return (timestamp < 0) ? Long.MIN_VALUE : timestamp;
     }
 
@@ -186,12 +194,24 @@ public class TestUtil {
         return Instant.ofEpochMilli(timestamp).atZone(UTC_ZONE).format(TIMESTAMP_FORMATTER);
     }
 
+    public static String formatTimestampNs(long timestampNs) {
+        return Instant.ofEpochSecond(0, timestampNs).atZone(UTC_ZONE).format(TIMESTAMP_NS_FORMATTER);
+    }
+
     public static String formatDate(long timestamp) {
         return Instant.ofEpochMilli(timestamp).atZone(UTC_ZONE).format(DATE_FORMATTER);
     }
 
+    public static String formatDateNs(long timestampNs) {
+        return Instant.ofEpochSecond(0, timestampNs).atZone(UTC_ZONE).format(DATE_FORMATTER);
+    }
+
     public static String formatTime(long timestamp) {
         return Instant.ofEpochMilli(timestamp).atZone(UTC_ZONE).format(TIME_FORMATTER);
+    }
+
+    public static String formatTimeNs(long timestampNs) {
+        return Instant.ofEpochSecond(0, timestampNs).atZone(UTC_ZONE).format(TIME_NS_FORMATTER);
     }
 
     public static String formatAlphanumeric(long value) {

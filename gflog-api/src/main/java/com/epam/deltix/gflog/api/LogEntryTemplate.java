@@ -129,6 +129,14 @@ public interface LogEntryTemplate {
     LogEntryTemplate withTimestamp(final long timestamp);
 
     /**
+     * Inserts the timestamp in nanoseconds since Epoch in "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'" format to this template.
+     *
+     * @param timestampNs in nanoseconds since Epoch to insert.
+     * @return a reference to this object.
+     */
+    LogEntryTemplate withTimestampNs(final long timestampNs);
+
+    /**
      * Inserts the date part of the timestamp in milliseconds since Epoch in "yyyy-MM-dd" format to this template.
      *
      * @param timestamp in milliseconds since Epoch to insert.
@@ -137,12 +145,28 @@ public interface LogEntryTemplate {
     LogEntryTemplate withDate(final long timestamp);
 
     /**
+     * Inserts the date part of the timestamp in nanoseconds since Epoch in "yyyy-MM-dd" format to this template.
+     *
+     * @param timestampNs in nanoseconds since Epoch to insert.
+     * @return a reference to this object.
+     */
+    LogEntryTemplate withDateNs(final long timestampNs);
+
+    /**
      * Inserts the time part of the timestamp in milliseconds since Epoch in "HH:mm:ss.SSS" format to this template.
      *
      * @param timestamp in milliseconds since Epoch to insert.
      * @return a reference to this object.
      */
     LogEntryTemplate withTime(final long timestamp);
+
+    /**
+     * Inserts the time part of the timestamp in nanoseconds since Epoch in "HH:mm:ss.SSSSSSSSS" format to this template.
+     *
+     * @param timestampNs in nanoseconds since Epoch to insert.
+     * @return a reference to this object.
+     */
+    LogEntryTemplate withTimeNs(final long timestampNs);
 
     /**
      * Inserts the alphanumeric value to this template.

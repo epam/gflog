@@ -146,6 +146,15 @@ public interface LogEntry extends AppendableEntry {
     LogEntry appendTimestamp(final long timestamp);
 
     /**
+     * Appends the timestamp in nanoseconds since Epoch in "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'" format to this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     * @return a reference to this object.
+     */
+    @CheckReturnValue
+    LogEntry appendTimestampNs(final long timestampNs);
+
+    /**
      * Appends the date part of the timestamp in milliseconds since Epoch in "yyyy-MM-dd" format to this entry.
      *
      * @param timestamp in milliseconds since Epoch to append.
@@ -155,6 +164,15 @@ public interface LogEntry extends AppendableEntry {
     LogEntry appendDate(final long timestamp);
 
     /**
+     * Appends the date part of the timestamp in nanoseconds since Epoch in "yyyy-MM-dd" format to this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     * @return a reference to this object.
+     */
+    @CheckReturnValue
+    LogEntry appendDateNs(final long timestampNs);
+
+    /**
      * Appends the time part of the timestamp in milliseconds since Epoch in "HH:mm:ss.SSS" format to this entry.
      *
      * @param timestamp in milliseconds since Epoch to append.
@@ -162,6 +180,15 @@ public interface LogEntry extends AppendableEntry {
      */
     @CheckReturnValue
     LogEntry appendTime(final long timestamp);
+
+    /**
+     * Appends the time part of the timestamp in nanoseconds since Epoch in "HH:mm:ss.SSSSSSSSS" format to this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     * @return a reference to this object.
+     */
+    @CheckReturnValue
+    LogEntry appendTimeNs(final long timestampNs);
 
     /**
      * Appends the alphanumeric value to this entry.
@@ -299,13 +326,28 @@ public interface LogEntry extends AppendableEntry {
     void appendTimestampLast(final long timestamp);
 
     /**
-     * Appends the date part of the timestamp in milliseconds since Epoch in "yyyy-MM-dd" format to this entry.
-     * Commits this entry.
+     * Appends the timestamp in nanoseconds since Epoch in "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'" format to this entry.
      * Commits this entry.
      *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     */
+    void appendTimestampNsLast(final long timestampNs);
+
+    /**
+     * Appends the date part of the timestamp in milliseconds since Epoch in "yyyy-MM-dd" format to this entry.
+     * Commits this entry.
+      *
      * @param timestamp in milliseconds since Epoch to append.
      */
     void appendDateLast(final long timestamp);
+
+    /**
+     * Appends the date part of the timestamp in nanoseconds since Epoch in "yyyy-MM-dd" format to this entry.
+     * Commits this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     */
+    void appendDateNsLast(final long timestampNs);
 
     /**
      * Appends the time part of the timestamp in milliseconds since Epoch in "HH:mm:ss.SSS" format to this entry.
@@ -316,13 +358,20 @@ public interface LogEntry extends AppendableEntry {
     void appendTimeLast(final long timestamp);
 
     /**
+     * Appends the time part of the timestamp in nanoseconds since Epoch in "HH:mm:ss.SSSSSSSSS" format to this entry.
+     * Commits this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     */
+    void appendTimeNsLast(final long timestampNs);
+
+    /**
      * Appends the alphanumeric value to this entry.
      * Commits this entry.
      *
      * @param alphanumeric to append.
      */
     void appendAlphanumericLast(final long alphanumeric);
-
 
     /**
      * Aborts this entry. Clears its content after.
