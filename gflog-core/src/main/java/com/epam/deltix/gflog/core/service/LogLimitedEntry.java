@@ -267,6 +267,23 @@ abstract class LogLimitedEntry implements AppendableEntry {
     }
 
     @Override
+    public final LogLimitedEntry appendTimestampNs(final long timestampNs) {
+        if (!truncated) {
+            if (timestampNs == Long.MIN_VALUE) {
+                formatNull();
+            } else {
+                Formatting.verifyTimestampNs(timestampNs);
+                ensureSpace(LENGTH_OF_TIMESTAMP_NS);
+                length = Formatting.formatTimestampNs(timestampNs, array, length);
+            }
+
+            verifyLimit();
+        }
+
+        return this;
+    }
+
+    @Override
     public final LogLimitedEntry appendDate(final long timestamp) {
         if (!truncated) {
             if (timestamp == Long.MIN_VALUE) {
@@ -284,6 +301,23 @@ abstract class LogLimitedEntry implements AppendableEntry {
     }
 
     @Override
+    public AppendableEntry appendDateNs(long timestampNs) {
+        if (!truncated) {
+            if (timestampNs == Long.MIN_VALUE) {
+                formatNull();
+            } else {
+                Formatting.verifyTimestampNs(timestampNs);
+                ensureSpace(LENGTH_OF_DATE);
+                length = Formatting.formatDateNs(timestampNs, array, length);
+            }
+
+            verifyLimit();
+        }
+
+        return this;
+    }
+
+    @Override
     public final LogLimitedEntry appendTime(final long timestamp) {
         if (!truncated) {
             if (timestamp == Long.MIN_VALUE) {
@@ -292,6 +326,23 @@ abstract class LogLimitedEntry implements AppendableEntry {
                 Formatting.verifyTimestamp(timestamp);
                 ensureSpace(LENGTH_OF_TIME);
                 length = Formatting.formatTime(timestamp, array, length);
+            }
+
+            verifyLimit();
+        }
+
+        return this;
+    }
+
+    @Override
+    public AppendableEntry appendTimeNs(long timestampNs) {
+        if (!truncated) {
+            if (timestampNs == Long.MIN_VALUE) {
+                formatNull();
+            } else {
+                Formatting.verifyTimestampNs(timestampNs);
+                ensureSpace(LENGTH_OF_TIME_NS);
+                length = Formatting.formatTimeNs(timestampNs, array, length);
             }
 
             verifyLimit();

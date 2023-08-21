@@ -129,6 +129,14 @@ public interface AppendableEntry extends Appendable {
     AppendableEntry appendTimestamp(final long timestamp);
 
     /**
+     * Appends the timestamp in nanoseconds since Epoch in "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'" format to this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     * @return a reference to this object.
+     */
+    AppendableEntry appendTimestampNs(final long timestampNs);
+
+    /**
      * Appends the date part of the timestamp in milliseconds since Epoch in "yyyy-MM-dd" format to this entry.
      *
      * @param timestamp in milliseconds since Epoch to append.
@@ -137,12 +145,28 @@ public interface AppendableEntry extends Appendable {
     AppendableEntry appendDate(final long timestamp);
 
     /**
+     * Appends the date part of the timestamp in nanoseconds since Epoch in "yyyy-MM-dd" format to this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     * @return a reference to this object.
+     */
+    AppendableEntry appendDateNs(final long timestampNs);
+
+    /**
      * Appends the time part of the timestamp in milliseconds since Epoch in "HH:mm:ss.SSS" format to this entry.
      *
      * @param timestamp in milliseconds since Epoch to append.
      * @return a reference to this object.
      */
     AppendableEntry appendTime(final long timestamp);
+
+    /**
+     * Appends the time part of the timestamp in nanoseconds since Epoch in "HH:mm:ss.SSSSSSSSS" format to this entry.
+     *
+     * @param timestampNs in nanoseconds since Epoch to append.
+     * @return a reference to this object.
+     */
+    AppendableEntry appendTimeNs(final long timestampNs);
 
     /**
      * Appends the alphanumeric value to this entry.

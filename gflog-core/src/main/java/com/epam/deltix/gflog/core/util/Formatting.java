@@ -18,8 +18,10 @@ public final class Formatting {
     public static final int LENGTH_OF_TRUE = 4;
     public static final int LENGTH_OF_FALSE = 5;
     public static final int LENGTH_OF_TIMESTAMP = 24;
+    public static final int LENGTH_OF_TIMESTAMP_NS = 30;
     public static final int LENGTH_OF_DATE = 10;
     public static final int LENGTH_OF_TIME = 12;
+    public static final int LENGTH_OF_TIME_NS = 18;
 
     public static final int MAX_LENGTH_OF_BOOLEAN = 5;
     public static final int MAX_LENGTH_OF_ALPHANUMERIC = 10;

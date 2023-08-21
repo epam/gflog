@@ -225,7 +225,7 @@ final class JulBridgeLogger extends Logger {
 
             searchFrom = end + 1;
             final int index = getIndex(message, start + 1, end);
-            if (index < 0 | index >= params.length) {
+            if (index < 0 || index >= params.length) {
                 continue;
             }
 

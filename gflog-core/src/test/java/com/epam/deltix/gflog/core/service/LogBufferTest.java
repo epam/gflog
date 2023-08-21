@@ -63,7 +63,7 @@ public class LogBufferTest {
         final LogBuffer.RecordHandler handler = (buffer, offset, length) -> {
             Assert.assertTrue(offset >= 0);
             Assert.assertTrue(length >= 0);
-            Assert.assertTrue(offset + length >= 0);
+            Assert.assertTrue(Integer.MAX_VALUE - offset - length >= 0);
         };
 
         final long deadline = System.currentTimeMillis() + 1000;

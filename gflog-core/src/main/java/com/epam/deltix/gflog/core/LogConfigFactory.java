@@ -12,6 +12,7 @@ import com.epam.deltix.gflog.core.util.PropertyUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -223,7 +224,7 @@ public final class LogConfigFactory {
             factory.setNamespaceAware(true);
 
             final DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(ErrorHandler.INSTANCE);
+            builder.setErrorHandler(ParsingErrorHandler.INSTANCE);
 
             final Document document = builder.parse(substitution);
             return getConfig(document);
@@ -251,7 +252,7 @@ public final class LogConfigFactory {
         final String original = new String(array, 0, length, StandardCharsets.UTF_8);
         final String substitution = PropertyUtil.substitute(original, properties);
 
-        return (original == substitution) ?
+        return original.equals(substitution) ?
                 new ByteArrayInputStream(array, 0, length) :
                 new ByteArrayInputStream(substitution.getBytes(StandardCharsets.UTF_8));
     }
@@ -502,22 +503,22 @@ public final class LogConfigFactory {
 
     }
 
-    private static class ErrorHandler implements org.xml.sax.ErrorHandler {
+    private static class ParsingErrorHandler implements ErrorHandler {
 
-        private static final ErrorHandler INSTANCE = new ErrorHandler();
+        private static final ParsingErrorHandler INSTANCE = new ParsingErrorHandler();
 
         @Override
-        public void warning(final SAXParseException exception) throws SAXException {
+        public void warning(final SAXParseException exception) {
             LogDebug.warn(exception.getMessage());
         }
 
         @Override
-        public void error(final SAXParseException exception) throws SAXException {
+        public void error(final SAXParseException exception) {
             LogDebug.warn(exception.getMessage());
         }
 
         @Override
-        public void fatalError(final SAXParseException exception) throws SAXException {
+        public void fatalError(final SAXParseException exception) {
             LogDebug.warn(exception.getMessage());
         }
 
