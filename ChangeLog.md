@@ -1,8 +1,16 @@
 # Change Log
 
+## 3.0.5
+
+- Support SLF4J 2.0.+.
+
+## 3.0.4
+
+- Support timestamp/date/time in nanoseconds.
+
 ## 3.0.3
 
-- Support Java 17 (replaced usage of internal api to get address of direct ByteBuffer)
+- Support Java 17 (replaced usage of internal api to get address of direct ByteBuffer).
 
 ## 3.0.2
 
