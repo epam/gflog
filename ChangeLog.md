@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.6
+
+- Support default values in substitutions: ${some.property:-default.value}
+- Support system properties and environment variables in substitutions: ${sys:some.property} and ${env:some.property}
+- Support nested substitutions for default values: ${env:some.property:-${sys:some.property:-default.value}}
+
 ## 3.0.5
 
 - Support SLF4J 2.0.+.
