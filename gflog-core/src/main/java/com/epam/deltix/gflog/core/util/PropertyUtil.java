@@ -9,9 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 public final class PropertyUtil {
 
-    private static final String SUBSTITUTION_START = "${";
-    private static final char SUBSTITUTION_END = '}';
-
     private PropertyUtil() {
     }
 
@@ -161,43 +158,6 @@ public final class PropertyUtil {
     }
 
     public static String substitute(final String value, final Properties properties) {
-        if (value.contains(SUBSTITUTION_START)) {
-            final StringBuilder builder = new StringBuilder();
-
-            final int length = value.length();
-            int i = 0;
-
-            while (true) {
-                final int j = value.indexOf(SUBSTITUTION_START, i);
-                if (j == -1) {
-                    break;
-                }
-
-                final int k = j + SUBSTITUTION_START.length();
-                final int m = value.indexOf(SUBSTITUTION_END, k);
-                if (m == -1) {
-                    break;
-                }
-
-                if (i < j) {
-                    builder.append(value, i, j);
-                }
-
-                final String name = value.substring(k, m);
-                final String substitution = properties.getProperty(name, "");
-
-                builder.append(substitution);
-                i = m + 1;
-            }
-
-            if (i < length) {
-                builder.append(value, i, length);
-            }
-
-            return builder.toString();
-        }
-
-        return value;
+        return new StringSubstitution(properties, System.getProperties(), System.getenv()).substitute(value);
     }
-
 }
