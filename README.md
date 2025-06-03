@@ -21,19 +21,23 @@ Use the following sample to log a message:
 
 ```java
 Log log = LogFactory.getLog("my-logger");
+...
 log.info()
-    .append("Hello world! This is a ")
-    .append(LogLevel.INFO)
-    .append(" message for you!")
-    .commit();
+   .append("Hello ")
+   .append(name)
+   .append("! Current time is ")
+   .appendTimestamp(System.currentTimeMillis())
+   .commit();
 ```
 
 Or:
 
 ```java
 Log log = LogFactory.getLog("my-logger");
-log.info("Hello world! This is a %s message for you!")
-    .with(LogLevel.INFO);
+..
+log.info("Hello %s! Current time is %s")
+   .with(name)
+   .withTimestamp(System.currentTimeMillis());
 ```
 
 ## Reference
