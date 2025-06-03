@@ -6,7 +6,15 @@
 ![Continuous Integration](https://github.com/epam/GFLog/workflows/Continuous%20Integration/badge.svg?branch=main)
 ![CodeQL](https://github.com/epam/GFLog/workflows/CodeQL/badge.svg?branch=main)
 
-Highly efficient garbage-free logging framework for Java 8+.
+Highly efficient garbage-free logging framework for Java 8 and above.
+
+- Fully tested on Java 8 through Java 21  
+- Optimized formatting support for:
+  - Epoch timestamps (milliseconds, nanoseconds)  
+  - Alphanumeric values  
+  - [DFP](https://github.com/epam/DFP/) decimal floating-point numbers  
+- Asynchronous logging with configurable throttling and retention policies  
+- Native support for streaming logs to Graylog using the [GELF](https://go2docs.graylog.org/current/getting_in_log_data/gelf.html) format
 
 ## Use
 
