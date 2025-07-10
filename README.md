@@ -21,8 +21,8 @@ Highly efficient garbage-free logging framework for Java 8 and above.
 Add the following dependencies to your project:
 
 ```gradle
-implementation 'com.epam.deltix:gflog-api:3.0.6'
-runtimeOnly    'com.epam.deltix:gflog-core:3.0.6'
+implementation 'com.epam.deltix:gflog-api:3.0.7'
+runtimeOnly    'com.epam.deltix:gflog-core:3.0.7'
 ```
 
 Use the following sample to log a message:
@@ -66,7 +66,7 @@ Build the project with Gradle and Java 8:
 This project was inspired by [gflogger](https://github.com/vladimirdolzhenko/gflogger) library by Vladimir Dolzhenko. It originally started as a fork but further enhancements and new API made it into a separate project.
 
 ## License
- Copyright (C) 2023 EPAM
+ Copyright (C) 2025 EPAM
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
