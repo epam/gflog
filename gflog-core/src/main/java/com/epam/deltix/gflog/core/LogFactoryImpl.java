@@ -14,10 +14,6 @@ final class LogFactoryImpl extends LogFactory {
 
     static final LogFactoryImpl INSTANCE = new LogFactoryImpl();
 
-    static {
-        LogConfigurator.configureIfNot();
-    }
-
     private final ConcurrentMap<String, LogView> loggerMap = new ConcurrentHashMap<>();
     private final Collection<Log> loggerSet = Collections.unmodifiableCollection(loggerMap.values());
 
