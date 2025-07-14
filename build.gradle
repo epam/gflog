@@ -2,6 +2,13 @@ plugins {
     id "com.github.johnrengelman.shadow" version "6.0.0" apply false
 }
 
+ext {
+    isReleaseVersion = !version.endsWith('-SNAPSHOT')
+    sonatypeCentralPortalReleasesRepoUrl = System.getenv('MAVEN_REPOSITORY')
+    sonatypeCentralPortalUsername = System.getenv('MAVEN_USERNAME')
+    sonatypeCentralPortalPassword = System.getenv('MAVEN_PASSWORD')
+}
+
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
@@ -10,8 +17,6 @@ subprojects {
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
-
-    ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     repositories {
         mavenCentral()
@@ -40,11 +45,11 @@ subprojects {
     publishing {
         repositories {
             maven {
-                url System.getenv('MAVEN_REPOSITORY')
+                url = sonatypeCentralPortalReleasesRepoUrl
 
                 credentials {
-                    username System.getenv('MAVEN_USERNAME')
-                    password System.getenv('MAVEN_PASSWORD')
+                    username = sonatypeCentralPortalUsername
+                    password = sonatypeCentralPortalPassword
                 }
             }
         }
@@ -169,6 +174,13 @@ def publishingProjects = subprojects - project('gflog-benchmark') - project('gfl
 task publishAll(dependsOn: publishingProjects.collect { it.path + ":publish" }) {
     group 'publishing'
     description 'Publish All Artifacts'
+}
+
+tasks.register('uploadArtifactsToCentralPortal', com.epam.deltix.buildsrc.SonatypeCentralPortalUploadRepositoryTask) {
+    portalUsername.set(sonatypeCentralPortalUsername)
+    portalPassword.set(sonatypeCentralPortalPassword)
+    groupId.set('com.epam.deltix')
+    snapshotRelease.set(!isReleaseVersion)
 }
 
 wrapper {
