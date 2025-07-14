@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.0.7
+
+- Fix deadlock when configuration happens from different threads (#18).
+
 ## 3.0.6
 
 - Support default values in substitutions: ${some.property:-default.value}

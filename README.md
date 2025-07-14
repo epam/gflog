@@ -6,34 +6,46 @@
 ![Continuous Integration](https://github.com/epam/GFLog/workflows/Continuous%20Integration/badge.svg?branch=main)
 ![CodeQL](https://github.com/epam/GFLog/workflows/CodeQL/badge.svg?branch=main)
 
-Highly efficient garbage-free logging framework for Java 8+.
+Highly efficient garbage-free logging framework for Java 8 and above.
+
+- Fully tested on Java 8 through Java 21  
+- Optimized formatting support for:
+  - Epoch timestamps (milliseconds, nanoseconds)  
+  - Alphanumeric values  
+  - [DFP](https://github.com/epam/DFP/) decimal floating-point numbers  
+- Asynchronous logging with configurable throttling and retention policies  
+- Native support for streaming logs to Graylog using the [GELF](https://go2docs.graylog.org/current/getting_in_log_data/gelf.html) format
 
 ## Use
 
 Add the following dependencies to your project:
 
 ```gradle
-implementation 'com.epam.deltix:gflog-api:3.0.6'
-runtimeOnly    'com.epam.deltix:gflog-core:3.0.6'
+implementation 'com.epam.deltix:gflog-api:3.0.7'
+runtimeOnly    'com.epam.deltix:gflog-core:3.0.7'
 ```
 
 Use the following sample to log a message:
 
 ```java
 Log log = LogFactory.getLog("my-logger");
+...
 log.info()
-    .append("Hello world! This is a ")
-    .append(LogLevel.INFO)
-    .append(" message for you!")
-    .commit();
+   .append("Hello ")
+   .append(name)
+   .append("! Current time is ")
+   .appendTimestamp(System.currentTimeMillis())
+   .commit();
 ```
 
 Or:
 
 ```java
 Log log = LogFactory.getLog("my-logger");
-log.info("Hello world! This is a %s message for you!")
-    .with(LogLevel.INFO);
+..
+log.info("Hello %s! Current time is %s")
+   .with(name)
+   .withTimestamp(System.currentTimeMillis());
 ```
 
 ## Reference
@@ -54,7 +66,7 @@ Build the project with Gradle and Java 8:
 This project was inspired by [gflogger](https://github.com/vladimirdolzhenko/gflogger) library by Vladimir Dolzhenko. It originally started as a fork but further enhancements and new API made it into a separate project.
 
 ## License
- Copyright (C) 2023 EPAM
+ Copyright (C) 2025 EPAM
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.

@@ -4,6 +4,10 @@ import com.epam.deltix.gflog.api.LogFactory;
 
 public final class LogFactoryBinder {
 
+    static {
+        LogConfigurator.configureIfNot();
+    }
+
     private LogFactoryBinder() {
     }
 
