@@ -132,7 +132,11 @@ public final class JclBridge implements Log {
     }
 
     private static void log(final Object object, final Throwable exception, final LogEntry entry) {
-        entry.append(object).appendLast(exception);
+        if (exception == null) {
+            entry.appendLast(object);
+        } else {
+            entry.append(object).appendLast(exception);
+        }
     }
 
 }

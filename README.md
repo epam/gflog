@@ -21,8 +21,8 @@ Highly efficient garbage-free logging framework for Java 8 and above.
 Add the following dependencies to your project:
 
 ```gradle
-implementation 'com.epam.deltix:gflog-api:3.0.7'
-runtimeOnly    'com.epam.deltix:gflog-core:3.0.7'
+implementation 'com.epam.deltix:gflog-api:3.0.8'
+runtimeOnly    'com.epam.deltix:gflog-core:3.0.8'
 ```
 
 Use the following sample to log a message:
