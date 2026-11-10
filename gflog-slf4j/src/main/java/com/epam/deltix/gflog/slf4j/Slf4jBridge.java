@@ -217,7 +217,11 @@ public final class Slf4jBridge extends MarkerIgnoringBase {
     }
 
     private static void log(final String message, final Throwable exception, final LogEntry entry) {
-        entry.append(message).appendLast(exception);
+        if (exception == null) {
+            entry.appendLast(message);
+        } else {
+            entry.append(message).appendLast(exception);
+        }
     }
 
     private static void log(final String message, final LogEntry entry) {

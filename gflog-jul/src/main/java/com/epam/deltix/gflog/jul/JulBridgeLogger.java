@@ -27,7 +27,7 @@ final class JulBridgeLogger extends Logger {
         final LogLevel level = getLogLevel(record.getLevel());
         if (log.isEnabled(level)) {
             final LogEntry entry = log.log(level);
-            appendMessage(record.getMessage(), record.getParameters(), entry);
+            JulMessageAppender.append(record.getMessage(), record.getParameters(), entry);
             appendException(record.getThrown(), entry);
             entry.commit();
         }
@@ -60,7 +60,7 @@ final class JulBridgeLogger extends Logger {
         final LogLevel logLevel = getLogLevel(level);
         if (log.isEnabled(logLevel)) {
             final LogEntry entry = log.log(logLevel);
-            appendMessageWithParam(msg, param1, entry);
+            JulMessageAppender.append(msg, param1, entry);
             entry.commit();
         }
     }
@@ -70,7 +70,7 @@ final class JulBridgeLogger extends Logger {
         final LogLevel logLevel = getLogLevel(level);
         if (log.isEnabled(logLevel)) {
             final LogEntry entry = log.log(logLevel);
-            appendMessage(msg, params, entry);
+            JulMessageAppender.append(msg, params, entry);
             entry.commit();
         }
     }
@@ -80,7 +80,7 @@ final class JulBridgeLogger extends Logger {
         final LogLevel logLevel = getLogLevel(level);
         if (log.isEnabled(logLevel)) {
             final LogEntry entry = log.log(logLevel);
-            appendMessage(msg, null, entry);
+            JulMessageAppender.append(msg, (Object[]) null, entry);
             appendException(thrown, entry);
             entry.commit();
         }
@@ -165,94 +165,6 @@ final class JulBridgeLogger extends Logger {
         } else {
             return LogLevel.ERROR;
         }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void appendMessage(final String message, final Object[] params, final LogEntry entry) {
-        if (params == null || params.length == 0 || message == null) {
-            entry.append(message);
-        } else {
-            appendMessageWithParams(message, params, entry);
-        }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void appendMessageWithParam(final String message, final Object param, final LogEntry entry) {
-        int searchFrom = 0;
-        int appendFrom = 0;
-
-        while (true) {
-            final int start = message.indexOf('{', searchFrom);
-            if (start < 0) {
-                break;
-            }
-
-            final int end = message.indexOf('}', start + 2);
-            if (end < 0) {
-                break;
-            }
-
-            searchFrom = end + 1;
-            final int index = getIndex(message, start + 1, end);
-            if (index != 0) {
-                continue;
-            }
-
-            entry.append(message, appendFrom, start);
-            entry.append(param);
-
-            appendFrom = searchFrom;
-        }
-
-        entry.append(message, appendFrom, message.length());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void appendMessageWithParams(final String message, final Object[] params, final LogEntry entry) {
-        int searchFrom = 0;
-        int appendFrom = 0;
-
-        while (true) {
-            final int start = message.indexOf('{', searchFrom);
-            if (start < 0) {
-                break;
-            }
-
-            final int end = message.indexOf('}', start + 2);
-            if (end < 0) {
-                break;
-            }
-
-            searchFrom = end + 1;
-            final int index = getIndex(message, start + 1, end);
-            if (index < 0 || index >= params.length) {
-                continue;
-            }
-
-            final Object param = params[index];
-
-            entry.append(message, appendFrom, start);
-            entry.append(param);
-
-            appendFrom = searchFrom;
-        }
-
-        entry.append(message, appendFrom, message.length());
-    }
-
-    private static int getIndex(final String message, int start, int end) {
-        int index = 0;
-
-        while (start < end) {
-            final char c = message.charAt(start++);
-            if (c < '0' | c > '9') {
-                return -1;
-            }
-
-            index = 10 * index + (c - '0');
-        }
-
-        return index;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
