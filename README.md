@@ -8,7 +8,7 @@
 
 Highly efficient garbage-free logging framework for Java 8 and above.
 
-- Fully tested on Java 8 through Java 21  
+- Fully tested on Java 8 through Java 25  
 - Optimized formatting support for:
   - Epoch timestamps (milliseconds, nanoseconds)  
   - Alphanumeric values  
@@ -66,7 +66,7 @@ Build the project with Gradle and Java 8:
 This project was inspired by [gflogger](https://github.com/vladimirdolzhenko/gflogger) library by Vladimir Dolzhenko. It originally started as a fork but further enhancements and new API made it into a separate project.
 
 ## License
- Copyright (C) 2025 EPAM
+ Copyright (C) 2026 EPAM
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
