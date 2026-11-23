@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.0.8
+
+- JUL bridge: support printf-style placeholders in log messages (#24).
+- SLF4J and JCL bridges: fix handling of log calls without an exception (#23).
+
 ## 3.0.7
 
 - Fix deadlock when configuration happens from different threads (#18).
