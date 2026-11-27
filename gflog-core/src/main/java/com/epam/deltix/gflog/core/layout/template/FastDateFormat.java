@@ -545,7 +545,7 @@ final class FastDateFormat {
 
     }
 
-    private static class NanosField implements NumberRule {
+    private static final class NanosField implements NumberRule {
 
         public static final NanosField INSTANCE = new NanosField();
 
@@ -579,7 +579,7 @@ final class FastDateFormat {
 
     }
 
-    private static class MicrosField implements NumberRule {
+    private static final class MicrosField implements NumberRule {
 
         public static final NanosField INSTANCE = new NanosField();
 
@@ -644,7 +644,7 @@ final class FastDateFormat {
 
     }
 
-    private static class TwoDigitYearField implements NumberRule {
+    private static final class TwoDigitYearField implements NumberRule {
 
         private static final TwoDigitYearField INSTANCE = new TwoDigitYearField();
 
@@ -884,7 +884,7 @@ final class FastDateFormat {
         }
     }
 
-    private static class BufferFormatter {
+    private static final class BufferFormatter {
 
         public static final char[] DIGIT_TENS = {
                 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',

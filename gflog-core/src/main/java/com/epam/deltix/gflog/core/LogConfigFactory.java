@@ -503,7 +503,7 @@ public final class LogConfigFactory {
 
     }
 
-    private static class ParsingErrorHandler implements ErrorHandler {
+    private static final class ParsingErrorHandler implements ErrorHandler {
 
         private static final ParsingErrorHandler INSTANCE = new ParsingErrorHandler();
 
