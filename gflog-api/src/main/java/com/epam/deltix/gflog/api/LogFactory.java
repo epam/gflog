@@ -43,7 +43,7 @@ public abstract class LogFactory {
     protected abstract Collection<Log> getLoggers();
 
 
-    private static class Implementation {
+    private static final class Implementation {
 
         private static final LogFactory INSTANCE;
 

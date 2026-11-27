@@ -8,7 +8,8 @@
 
 Highly efficient garbage-free logging framework for Java 8 and above.
 
-- Fully tested on Java 8 through Java 25  
+- Built and tested on Java 21
+- Compiled with JDK 8, so the published jars run on Java 8 and newer
 - Optimized formatting support for:
   - Epoch timestamps (milliseconds, nanoseconds)  
   - Alphanumeric values  
@@ -57,7 +58,8 @@ log.info("Hello %s! Current time is %s")
 
 ## Build
 
-Build the project with Gradle and Java 8:
+The build uses Gradle 9 on Java 21. Compilation uses a JDK 8 toolchain, and Gradle downloads JDK 8 and JDK 21 if they are not already installed.
+
 ```
 ./gradlew build
 ```

@@ -1,22 +1,17 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "6.0.0" apply false
+    id "com.gradleup.shadow" version "9.6.1" apply false
 }
 
-ext {
-    isReleaseVersion = !version.endsWith('-SNAPSHOT')
-    sonatypeCentralPortalReleasesRepoUrl = System.getenv('MAVEN_REPOSITORY')
-    sonatypeCentralPortalUsername = System.getenv('MAVEN_USERNAME')
-    sonatypeCentralPortalPassword = System.getenv('MAVEN_PASSWORD')
-}
+def isReleaseVersion = !version.endsWith('-SNAPSHOT')
+def sonatypeCentralPortalReleasesRepoUrl = System.getenv('MAVEN_REPOSITORY')
+def sonatypeCentralPortalUsername = System.getenv('MAVEN_USERNAME')
+def sonatypeCentralPortalPassword = System.getenv('MAVEN_PASSWORD')
 
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
-
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
 
     repositories {
         mavenCentral()
@@ -26,7 +21,13 @@ subprojects {
         testImplementation 'junit:junit:4.12'
     }
 
-    compileTestJava.options.encoding = 'UTF-8'
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        // JDK 21 hides sun.misc.Unsafe when --release 8 is set. JDK 8 javac still sees it and emits Java 8 bytecode.
+        javaCompiler = javaToolchains.compilerFor {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
+    }
 
     test {
         testLogging {
@@ -38,6 +39,9 @@ subprojects {
     }
 
     java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
         withJavadocJar()
         withSourcesJar()
     }
@@ -91,15 +95,16 @@ subprojects {
             }
         }
 
-        signing {
-            def signingKey = System.getenv("SIGNING_KEY")
-            def signingPassword = System.getenv("SIGNING_PASSWORD")
+    }
 
+    signing {
+        def signingKey = System.getenv("SIGNING_KEY")
+        def signingPassword = System.getenv("SIGNING_PASSWORD")
+        if (signingKey) {
             useInMemoryPgpKeys(signingKey, signingPassword)
-            sign publishing.publications.mavenJava
-
-            required { isReleaseVersion }
         }
+        sign publishing.publications.mavenJava
+        required = isReleaseVersion
     }
 }
 
@@ -148,7 +153,7 @@ project('gflog-slf4j') {
 }
 
 project('gflog-benchmark') {
-    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'com.gradleup.shadow'
 
     shadowJar.manifest.attributes << ['Main-Class': 'org.openjdk.jmh.Main']
 
@@ -171,9 +176,10 @@ project('gflog-sample') {
 }
 
 def publishingProjects = subprojects - project('gflog-benchmark') - project('gflog-sample')
-task publishAll(dependsOn: publishingProjects.collect { it.path + ":publish" }) {
-    group 'publishing'
-    description 'Publish All Artifacts'
+tasks.register('publishAll') {
+    dependsOn publishingProjects.collect { it.path + ":publish" }
+    group = 'publishing'
+    description = 'Publish All Artifacts'
 }
 
 tasks.register('uploadArtifactsToCentralPortal', com.epam.deltix.buildsrc.SonatypeCentralPortalUploadRepositoryTask) {
@@ -184,6 +190,6 @@ tasks.register('uploadArtifactsToCentralPortal', com.epam.deltix.buildsrc.Sonaty
 }
 
 wrapper {
-    gradleVersion = '7.4.1'
+    gradleVersion = '9.9.3'
     distributionType = Wrapper.DistributionType.BIN
 }
